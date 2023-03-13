@@ -1256,25 +1256,25 @@ def fill_attributes(network):
         vals_to_assign = vals_to_assign.join(df_speed)
 
     def fill_empty_maxspeed(x):
-      if len(list(x.maxspeed)) == 0:
-        return speed_d[x.name]
-      else:
-        return x.maxspeed
+        if len(list(x.maxspeed)) == 0:
+            return speed_d[x.name]
+        else:
+            return x.maxspeed
         
     def fill_empty_lanes(x):
-      if len(list(x.lanes)) == 0:
-        return lanes_d[x.name]
-      else:
-        return x.lanes
+        if len(list(x.lanes)) == 0:
+            return lanes_d[x.name]
+        else:
+            return x.lanes
     
     def get_max_in_vals_to_assign(x):
         if isinstance(x,list):
-          return max([(y) for y in x])
+            return max([(y) for y in x])
         else:
-          try:
-            return re.findall(r'\d+',x)[0]
-          except:
-            return x      
+            try:
+                return re.findall(r'\d+',x)[0]
+            except:
+                return x      
             
     def get_max(x):
         return max([int(y) for y in x])
@@ -1296,7 +1296,7 @@ def fill_attributes(network):
     def fill_lanes(x):
         if isinstance(x.lanes,str):
             try:
-              return int(x.lanes)  
+                return int(x.lanes)  
             except:
                 try:
                     return int(get_max(re.findall(r'\d+', x.lanes)))
@@ -1319,28 +1319,28 @@ def fill_attributes(network):
                 return [int(s) for s in x.maxspeed.split() if s.isdigit()][0]
             except:
                 try:
-                  return int(get_max(vals_to_assign.loc[x.highway.split('_')[0]].maxspeed))
+                    return int(get_max(vals_to_assign.loc[x.highway.split('_')[0]].maxspeed))
                 except:
-                  try:
-                    return int(get_max(re.findall(r'\d+', x.maxspeed)))
-                  except:
-                    return int(vals_to_assign.loc[x.highway].maxspeed)             
+                        try:
+                            return int(get_max(re.findall(r'\d+', x.maxspeed)))
+                        except:
+                            return int(vals_to_assign.loc[x.highway].maxspeed)             
         elif x.maxspeed is None:
             if isinstance(vals_to_assign.loc[x.highway].maxspeed,np.ndarray):
                 return int(get_max(vals_to_assign.loc[x.highway.split('_')[0]].maxspeed))
             else:           
                 try:
-                  return int(get_max(re.findall(r'\d+', x.maxspeed)))
+                    return int(get_max(re.findall(r'\d+', x.maxspeed)))
                 except:
-                  return int(vals_to_assign.loc[x.highway].maxspeed)  
+                    return int(vals_to_assign.loc[x.highway].maxspeed)  
                   
         elif np.isnan(x.maxspeed):
             if isinstance(vals_to_assign.loc[x.highway].maxspeed,np.ndarray):
-              try:
-                return int(get_max(vals_to_assign.loc[x.highway.split('_')[0]].maxspeed))
-              except:
-                print(vals_to_assign.loc[x.highway].maxspeed)
-                return int(vals_to_assign.loc[x.highway].maxspeed)              
+                try:
+                    return int(get_max(vals_to_assign.loc[x.highway.split('_')[0]].maxspeed))
+                except:
+                    print(vals_to_assign.loc[x.highway].maxspeed)
+                    return int(vals_to_assign.loc[x.highway].maxspeed)              
             else:           
                 return int(vals_to_assign.loc[x.highway].maxspeed)  
 
