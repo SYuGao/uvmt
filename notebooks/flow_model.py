@@ -49,11 +49,7 @@ def load_network(osm_path,mainroad=True):
     Returns:
         [type]: [description]
     """    
-    if mainroad:
-        df = mainRoads(osm_path)
-    else:
-        df = roads(osm_path)
-
+    
     net = Network(edges=df)
     net = clean_roundabouts(net)
     net = split_edges_at_nodes(net)
