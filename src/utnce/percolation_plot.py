@@ -19,7 +19,7 @@ def plot_routes_even(routes_file, edges, shortest_path_edges):
     shortest_edges_list = list(shortest_path_edges.items())
     num_plots = len(routes_file) // 2
     colors = ['black', 'green', 'blue', 'orange', 'purple']
-    fig, axes = plt.subplots(num_plots, 2, figsize=(25, 25))
+    fig, axes = plt.subplots(num_plots, 2, figsize=(12, 12))
 
     for i, ax in enumerate(axes.flat):
         if i < num_plots:
@@ -43,7 +43,7 @@ def plot_routes_odd(routes_file, edges, shortest_path_edges):
     shortest_edges_list = list(shortest_path_edges.items())
     num_plots = len(routes_file) // 2
     colors = ['black', 'green', 'blue', 'orange', 'purple']
-    fig, axes = plt.subplots(num_plots, 2, figsize=(25, 25))
+    fig, axes = plt.subplots(num_plots, 2, figsize=(12, 12))
 
     for i, ax in enumerate(axes.flat):
         if i < num_plots:

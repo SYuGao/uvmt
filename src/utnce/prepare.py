@@ -170,17 +170,32 @@ def railway_stations_subway(osm_path):
     return (retrieve(osm_path,'points',['public_transport', 'subway', 'name']))  #,'railway'
 
 def sub_stations(osm_path):
-
+    """
+    Extracts and filters subway stations from OpenStreetMap data.
+    
+    Parameters:
+        osm_path (str): The path to the OpenStreetMap data.
+        
+    Returns:
+        pandas.DataFrame: A DataFrame containing filtered subway stations with their x and y coordinates.
+    """
+    
+    # Calling the function railway_stations_subway to get a DataFrame of all railway stations
     df_railway_stations = railway_stations_subway(osm_path)
     
+    # Filtering the DataFrame to select only subway stations
     sub_stations = df_railway_stations.loc[df_railway_stations.subway == 'yes']
+    
+    # Further filtering to include only stop positions (public_transport == 'stop_position')
     sub_stations = sub_stations.loc[sub_stations.public_transport == 'stop_position']
     
+    # Adding new columns 'geo_x' and 'geo_y' to store the x and y coordinates of the stations' geometry
     sub_stations['geo_x'] = sub_stations.geometry.x
     sub_stations['geo_y'] = sub_stations.geometry.y
     
+    # Returning the DataFrame of subway stations
     return sub_stations
-
+    
 def tram_network(osm_path):
     """
     Extracts tram network data from an OpenStreetMap file at the specified file path and returns it as a Pandas DataFrame.
@@ -566,7 +581,6 @@ def id_pairs_inline(tram_line_dict,tram_order_route_dict):
     tram_order_coordinates = tram_order_route_dict.copy()
     tram_order_coordinates = {key: value[['name', 'geo_x', 'geo_y']] for key, value in tram_order_coordinates.items()}
 
-    # am_tram_order_coordinates
 
     new_dict = {}
 
