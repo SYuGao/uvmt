@@ -118,6 +118,7 @@ def retrieve(osm_path,geoType,keyCol,**valConstraint):
     else:
         print("WARNING: No features or No Memory. returning empty GeoDataFrame") 
         return geopandas.GeoDataFrame(columns=['osm_id','geometry']) #,crs={'init': 'epsg:4326'}    
+
     
 def railway(osm_path):
     """
@@ -158,44 +159,6 @@ def subway_network(osm_path):
     
     return subway
 
-def railway_stations_subway(osm_path):
-    """
-    Function to extract tram station nodes from OpenStreetMap.  
-    Arguments:
-        *osm_path* : file path to the .osm.pbf file of the region for which we want to do the analysis.       
-    Returns:
-        *GeoDataFrame* : a geopandas GeoDataFrame with all tram station nodes.
-    """   
-    
-    return (retrieve(osm_path,'points',['public_transport', 'subway', 'name']))  #,'railway'
-
-def sub_stations(osm_path):
-    """
-    Extracts and filters subway stations from OpenStreetMap data.
-    
-    Parameters:
-        osm_path (str): The path to the OpenStreetMap data.
-        
-    Returns:
-        pandas.DataFrame: A DataFrame containing filtered subway stations with their x and y coordinates.
-    """
-    
-    # Calling the function railway_stations_subway to get a DataFrame of all railway stations
-    df_railway_stations = railway_stations_subway(osm_path)
-    
-    # Filtering the DataFrame to select only subway stations
-    sub_stations = df_railway_stations.loc[df_railway_stations.subway == 'yes']
-    
-    # Further filtering to include only stop positions (public_transport == 'stop_position')
-    sub_stations = sub_stations.loc[sub_stations.public_transport == 'stop_position']
-    
-    # Adding new columns 'geo_x' and 'geo_y' to store the x and y coordinates of the stations' geometry
-    sub_stations['geo_x'] = sub_stations.geometry.x
-    sub_stations['geo_y'] = sub_stations.geometry.y
-    
-    # Returning the DataFrame of subway stations
-    return sub_stations
-    
 def tram_network(osm_path):
     """
     Extracts tram network data from an OpenStreetMap file at the specified file path and returns it as a Pandas DataFrame.
@@ -216,29 +179,80 @@ def tram_network(osm_path):
     # Return the filtered DataFrame
     return tram
 
-def railway_stations_tram(osm_path):
-    """
-    Function to extract tram station nodes from OpenStreetMap.  
-    Arguments:
-        *osm_path* : file path to the .osm.pbf file of the region for which we want to do the analysis.       
-    Returns:
-        *GeoDataFrame* : a geopandas GeoDataFrame with all tram station nodes.
-    """   
+def road(osm_path):
     
-    return (retrieve(osm_path,'points',['public_transport', 'tram', 'name']))  #,'railway'
+    return retrieve(osm_path,'lines',['highway'])
+
+
+def public_stations(osm_path):
+    
+    return (retrieve(osm_path,'points',['public_transport', 'railway', 'tram', 'subway', 'highway', 'bus', 'name']))
+
+def sub_stations(osm_path):
+    """
+    Extracts and filters subway stations from OpenStreetMap data.
+    
+    Parameters:
+        osm_path (str): The path to the OpenStreetMap data.
+        
+    Returns:
+        pandas.DataFrame: A DataFrame containing filtered subway stations with their x and y coordinates.
+    """
+    
+    # Calling the function railway_stations_subway to get a DataFrame of all railway stations
+    df_railway_stations = public_stations(osm_path)
+
+
+    # Filtering the DataFrame to select only subway stations
+    sub_stations1 = df_railway_stations.loc[df_railway_stations.subway == 'yes']
+    
+    # Further filtering to include only stop positions (public_transport == 'stop_position')
+    sub_stations1 = sub_stations1.loc[sub_stations1.public_transport == 'stop_position']
+    
+    sub_stations2 = df_railway_stations.loc[df_railway_stations.subway == 'yes']
+    sub_stations2 = sub_stations2.loc[sub_stations2.railway == 'stop'] 
+    
+    sub_stations = pd.concat([sub_stations1, sub_stations2])
+    # Adding new columns 'geo_x' and 'geo_y' to store the x and y coordinates of the stations' geometry
+    sub_stations['geo_x'] = sub_stations.geometry.x
+    sub_stations['geo_y'] = sub_stations.geometry.y
+    
+    # Returning the DataFrame of subway stations
+    return sub_stations
 
 def tram_stations(osm_path):
+   
+    df_railway_stations = public_stations(osm_path)
 
-    df_railway_stations = railway_stations_tram(osm_path)
+    tram_stations1 = df_railway_stations.loc[df_railway_stations.tram == 'yes']
+    tram_stations1 = tram_stations1.loc[tram_stations1.public_transport == 'stop_position']
     
-    tram_stations = df_railway_stations.loc[df_railway_stations.tram == 'yes']
-    tram_stations = tram_stations.loc[tram_stations.public_transport == 'stop_position']
+    tram_stations2 = df_railway_stations.loc[df_railway_stations.tram == 'yes']
+    tram_stations2 = tram_stations2.loc[tram_stations2.railway == 'tram_stop'] 
     
+    tram_stations = pd.concat([tram_stations1, tram_stations2])
+
     tram_stations['geo_x'] = tram_stations.geometry.x
     tram_stations['geo_y'] = tram_stations.geometry.y
     
     return tram_stations
-
+    
+def bus_stations(osm_path):
+    
+    df_publich__transport_stations = public_stations(osm_path)
+    
+    bus_stations1 = df_publich__transport_stations.loc[df_publich__transport_stations.highway == 'bus_stop']
+    
+    bus_stations2 = df_publich__transport_stations.loc[df_publich__transport_stations.bus == 'yes']
+    bus_stations2 = bus_stations2.loc[bus_stations2.public_transport == 'stop_position']
+    
+    bus_stations = pd.concat([bus_stations1, bus_stations2])
+    
+    bus_stations['geo_x'] = bus_stations.geometry.x
+    bus_stations['geo_y'] = bus_stations.geometry.y   
+        
+    return bus_stations
+    
 def add_stations(net,station_file):
     
     station_geometries = pd.DataFrame(station_file.geometry)
