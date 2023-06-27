@@ -387,7 +387,12 @@ def tram_routes(osm_path):
     df_routes = routes(osm_path)
     tram_routes = pd.DataFrame(df_routes.loc[df_routes.route == 'tram'])
     return tram_routes
-
+    
+def bus_routes(osm_path):
+    df_routes = routes(osm_path)
+    bus_routes = pd.DataFrame(df_routes.loc[df_routes.route == 'bus'])
+    return bus_routes
+    
 def sorted_routes(routes_file):     
     routes_file['ref'] = routes_file['ref'].astype(int)
     routes_file = routes_file.sort_values('ref')
@@ -470,7 +475,7 @@ def order_stations_inline(tram_line_dict,all_tram_stations_name,tram_routes,tram
 
     for key,value in tram_stations_dict.items():
         value1 = value
-        value2 = all_tram_stations_name.loc[all_tram_stations_name.within(tram_routes.iloc[value1].geometry.buffer(0.00000001))]
+        value2 = all_tram_stations_name.loc[all_tram_stations_name.within(tram_routes.iloc[value1].geometry.buffer(0.00000001))]   # buffer(0.0001) for bus 
         value2['id'] = value2.reset_index().index
         tram_stations_dict[key] = value2[['id', 'name', 'geometry', 'geo_x', 'geo_y']].reset_index(drop=True)
     
