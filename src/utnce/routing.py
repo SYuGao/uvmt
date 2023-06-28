@@ -15,6 +15,7 @@ from simplify import *
 import warnings
 warnings.filterwarnings("ignore")
 
+
 # Create a base Graph object as the basic topology network with 'edges' and 'nodes'
 def create_ground_graph(edges, nodes):
     """
@@ -55,6 +56,7 @@ def create_ground_graph(edges, nodes):
     
     return G
 
+    
 # Calculate the shorted path
 def shortest_path(G, start_point_id, end_point_id, edges, weight = "weight"):   # calculate the shortest path for one start_end_node id_pair
     """
@@ -138,7 +140,8 @@ def all_shortest_paths(id_pairs,edges):
         
     return shortest_path_pairs
 
-# calculates the number of repetitions of each used edge and add the number to 'edges' with column of 'count_weight'
+    
+# Calculates the number of repetitions of each used edge and add the number to 'edges' with column of 'count_weight'
 def edges_with_count_weight(shortest_path_pairs, edges):
     """
     Adds a 'count_weight' column to the edges dataframe to represent the number of times 
@@ -172,51 +175,3 @@ def edges_with_count_weight(shortest_path_pairs, edges):
     shortest_path_edges = pd.merge(shortest_path_pairs,duplicate_row_count, on='id', how='left')
     shortest_path_edges['count_weight'] = shortest_path_edges['count_weight'].fillna(1)
     return duplicate_row_count, shortest_path_edges, edges
-
-def plot_routes_even(routes_file, edges, shortest_path_edges):
-    shortest_edges_list = list(shortest_path_edges.items())
-    num_plots = len(routes_file) // 2
-    colors = ['black', 'green', 'blue', 'orange', 'purple']
-    fig, axes = plt.subplots(num_plots, 2, figsize=(25, 25))
-
-    for i, ax in enumerate(axes.flat):
-        if i < num_plots:
-            
-            color = colors[i % len(colors)]
-
-            gpd.GeoDataFrame(edges.copy()).plot(ax=ax, color='gray', alpha=0.5)
-            gpd.GeoDataFrame(shortest_edges_list[i * 2][1].copy()).plot(ax=ax, zorder=1,
-                                                                               linewidth=(shortest_edges_list[i * 2][
-                                                                                               1].count_weight) * 2,
-                                                                               color=color)
-            ax.set_title(routes_file.iloc[i * 2]['name'])
-        else:
-            ax.axis('off')
-
-        ax.axis('off')
-
-    plt.show()
-
-def plot_routes_odd(routes_file, edges, shortest_path_edges):
-    shortest_edges_list = list(shortest_path_edges.items())
-    num_plots = len(routes_file) // 2
-    colors = ['black', 'green', 'blue', 'orange', 'purple']
-    fig, axes = plt.subplots(num_plots, 2, figsize=(25, 25))
-
-    for i, ax in enumerate(axes.flat):
-        if i < num_plots:
-            
-            color = colors[i % len(colors)]
-
-            gpd.GeoDataFrame(edges.copy()).plot(ax=ax, color='gray', alpha=0.5)
-            gpd.GeoDataFrame(shortest_edges_list[i * 2 + 1][1].copy()).plot(ax=ax, zorder=1,
-                                                                               linewidth=(shortest_edges_list[i * 2 + 1][
-                                                                                               1].count_weight) * 2,
-                                                                               color=color)
-            ax.set_title(routes_file.iloc[i * 2 + 1 ]['name'])
-        else:
-            ax.axis('off')
-
-        ax.axis('off')
-
-    plt.show()

@@ -17,6 +17,7 @@ warnings.filterwarnings("ignore")
 
 gdal.SetConfigOption("OSM_CONFIG_FILE", "osmconf.ini")
 
+
 # Define a helper function to generate pairs of consecutive elements in a list
 def pairwise(iterable):
     "s -> (s0, s1), (s1, s2), (s2, s3), ..."
@@ -49,8 +50,9 @@ def permutations(iterable, r=None):
                 break
         else:
             return 
-        
-# Retrive data from OSM and get the geographic data of tram
+
+            
+# Retrive data from OSM and get the geographic data of subway, tram, bus etc.
 def query_b(geoType,keyCol,**valConstraint):
     """
     This function builds an SQL query from the values passed to the retrieve() function.
@@ -119,7 +121,8 @@ def retrieve(osm_path,geoType,keyCol,**valConstraint):
         print("WARNING: No features or No Memory. returning empty GeoDataFrame") 
         return geopandas.GeoDataFrame(columns=['osm_id','geometry']) #,crs={'init': 'epsg:4326'}    
 
-    
+        
+# Retrieve linestrings data for transportation networks to get edges
 def railway(osm_path):
     """
     Function to extract railway linestrings from OpenStreetMap
@@ -180,39 +183,58 @@ def tram_network(osm_path):
     return tram
 
 def road(osm_path):
+    """
+    Retrieves all the road lines from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
+    Returns:
+        list: A list of road lines (highways) from the OSM file.
+    """
+    return retrieve(osm_path, 'lines', ['highway'])
+
     
-    return retrieve(osm_path,'lines',['highway'])
-
-
+# Retrieve points data for transportation networks to get stations
 def public_stations(osm_path):
-    
-    return (retrieve(osm_path,'points',['public_transport', 'railway', 'tram', 'subway', 'highway', 'bus', 'name']))
+    """
+    Retrieves public transportation stations from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
+    Returns:
+        list: A list of public transportation stations from the OSM file.
+    """
+    return retrieve(osm_path, 'points', ['public_transport', 'railway', 'tram', 'subway', 'highway', 'bus', 'name'])
 
 def sub_stations(osm_path):
     """
-    Extracts and filters subway stations from OpenStreetMap data.
-    
-    Parameters:
-        osm_path (str): The path to the OpenStreetMap data.
-        
+    Retrieves subway stations from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
     Returns:
-        pandas.DataFrame: A DataFrame containing filtered subway stations with their x and y coordinates.
+        pandas.DataFrame: A DataFrame containing subway stations from the OSM file.
     """
     
-    # Calling the function railway_stations_subway to get a DataFrame of all railway stations
+    # retrieve all public transportation stations from the OSM file and assigns the result to df_railway_stations
     df_railway_stations = public_stations(osm_path)
 
-
-    # Filtering the DataFrame to select only subway stations
+    # create sub_stations1 by filtering df_railway_stations to include only rows where the 'subway' column is 'yes'
     sub_stations1 = df_railway_stations.loc[df_railway_stations.subway == 'yes']
-    
-    # Further filtering to include only stop positions (public_transport == 'stop_position')
+    # include only rows where the 'public_transport' column has a value of 'stop_position'
     sub_stations1 = sub_stations1.loc[sub_stations1.public_transport == 'stop_position']
-    
+
+    # filtering df_railway_stations to include only rows where the 'subway' column has a value of 'yes'.
     sub_stations2 = df_railway_stations.loc[df_railway_stations.subway == 'yes']
+    # further filtered to include only rows where the 'railway' column has a value of 'stop'
     sub_stations2 = sub_stations2.loc[sub_stations2.railway == 'stop'] 
-    
+
+    # using pd.concat() function to create a new DataFrame sub_stations that contains all the subway stations.
     sub_stations = pd.concat([sub_stations1, sub_stations2])
+    
     # Adding new columns 'geo_x' and 'geo_y' to store the x and y coordinates of the stations' geometry
     sub_stations['geo_x'] = sub_stations.geometry.x
     sub_stations['geo_y'] = sub_stations.geometry.y
@@ -221,47 +243,88 @@ def sub_stations(osm_path):
     return sub_stations
 
 def tram_stations(osm_path):
-   
+    """
+    Retrieves tram stations from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing tram stations information.
+    """
+    # Retrieve public transportation stations from the OSM file
     df_railway_stations = public_stations(osm_path)
 
-    tram_stations1 = df_railway_stations.loc[df_railway_stations.tram == 'yes']
-    tram_stations1 = tram_stations1.loc[tram_stations1.public_transport == 'stop_position']
-    
-    tram_stations2 = df_railway_stations.loc[df_railway_stations.tram == 'yes']
-    tram_stations2 = tram_stations2.loc[tram_stations2.railway == 'tram_stop'] 
-    
+    # Filter tram stations where public_transport is 'stop_position'
+    tram_stations1 = df_railway_stations.loc[df_railway_stations['tram'] == 'yes']
+    tram_stations1 = tram_stations1.loc[tram_stations1['public_transport'] == 'stop_position']
+
+    # Filter tram stations where railway is 'tram_stop'
+    tram_stations2 = df_railway_stations.loc[df_railway_stations['tram'] == 'yes']
+    tram_stations2 = tram_stations2.loc[tram_stations2['railway'] == 'tram_stop']
+
+    # Concatenate the filtered tram stations into a single DataFrame
     tram_stations = pd.concat([tram_stations1, tram_stations2])
 
+    # Extract the x and y coordinates from the geometry column
     tram_stations['geo_x'] = tram_stations.geometry.x
     tram_stations['geo_y'] = tram_stations.geometry.y
-    
-    return tram_stations
-    
-def bus_stations(osm_path):
-    
-    df_publich__transport_stations = public_stations(osm_path)
-    
-    bus_stations1 = df_publich__transport_stations.loc[df_publich__transport_stations.highway == 'bus_stop']
-    
-    bus_stations2 = df_publich__transport_stations.loc[df_publich__transport_stations.bus == 'yes']
-    bus_stations2 = bus_stations2.loc[bus_stations2.public_transport == 'stop_position']
-    
-    bus_stations = pd.concat([bus_stations1, bus_stations2])
-    
-    bus_stations['geo_x'] = bus_stations.geometry.x
-    bus_stations['geo_y'] = bus_stations.geometry.y   
-        
-    return bus_stations
-    
-def add_stations(net,station_file):
-    
-    station_geometries = pd.DataFrame(station_file.geometry)
-    
-    net.nodes = pd.concat([net.nodes,station_geometries]).reset_index(drop=True)
-                           
-    return net
 
-# Pre-processing the geographic data of the subway network to obtain 'edges' and 'nodes'
+    return tram_stations
+
+def bus_stations(osm_path):
+    """
+    Retrieves bus stations from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing bus stations information.
+    """
+    # Retrieve public transport stations from the OSM file
+    df_public_transport_stations = public_stations(osm_path)
+
+    # Filter bus stations based on highway tag
+    bus_stations1 = df_public_transport_stations.loc[df_public_transport_stations['highway'] == 'bus_stop']
+
+    # Filter bus stations based on bus and public_transport tags
+    bus_stations2 = df_public_transport_stations.loc[df_public_transport_stations['bus'] == 'yes']
+    bus_stations2 = bus_stations2.loc[bus_stations2['public_transport'] == 'stop_position']
+
+    # Concatenate the two sets of bus stations
+    bus_stations = pd.concat([bus_stations1, bus_stations2])
+
+    # Extract x and y coordinates from the geometry column
+    bus_stations['geo_x'] = bus_stations['geometry'].x
+    bus_stations['geo_y'] = bus_stations['geometry'].y
+
+    return bus_stations
+
+    
+# Pre-processing the geographic data to obtain all 'edges' and 'nodes' of transportation networks(as many as nodes)
+def add_stations(net, station_file):
+    """
+    Add station geometries to a network.
+
+    Args:
+        net (pandas.DataFrame): The network data.
+        station_file (pandas.DataFrame): The file containing station geometries.
+
+    Returns:
+        pandas.DataFrame: The updated network data with added station geometries.
+    """
+
+    # Create a DataFrame with only the station geometries from the station_file
+    station_geometries = pd.DataFrame(station_file.geometry)
+
+    # Concatenate the existing network nodes DataFrame with the station geometries DataFrame
+    # and reset the index of the combined DataFrame
+    net.nodes = pd.concat([net.nodes, station_geometries]).reset_index(drop=True)
+
+    # Return the updated network data with added station geometries
+    return net
+    
 def prepare_network(subway,station_file):
     """
     Prepare a subway network represented as a GeoDataFrame of LineString objects for routing.
@@ -357,6 +420,8 @@ def expand_edges(edges):
     # Return the expanded edges DataFrame
     return edges
 
+
+# Retrieve multilinestrings data of transportation networks to get routes
 def routes(osm_path):
     """
     Extracts route data from an OpenStreetMap file at the specified file path and returns it as a Pandas DataFrame.
@@ -379,118 +444,292 @@ def routes(osm_path):
     return route_data
 
 def sub_routes(osm_path):
+    """
+    Retrieves subway routes from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing subway routes information.
+    """
+    # Retrieve routes from the OSM file
     df_routes = routes(osm_path)
-    sub_routes = pd.DataFrame(df_routes.loc[df_routes.route == 'subway'])
+
+    # Filter the routes DataFrame to include only subway routes
+    sub_routes = pd.DataFrame(df_routes.loc[df_routes['route'] == 'subway'])
+
+    # Return the DataFrame containing subway routes
     return sub_routes
 
 def tram_routes(osm_path):
+    """
+    Retrieves tram routes from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing tram routes information.
+    """
+    # Retrieve routes from the OSM file
     df_routes = routes(osm_path)
-    tram_routes = pd.DataFrame(df_routes.loc[df_routes.route == 'tram'])
+
+    # Filter the routes DataFrame to include only tram routes
+    tram_routes = pd.DataFrame(df_routes.loc[df_routes['route'] == 'tram'])
+
+    # Return the DataFrame containing tram routes information
     return tram_routes
-    
+
 def bus_routes(osm_path):
+    """
+    Retrieves bus routes from an OpenStreetMap file.
+
+    Args:
+        osm_path (str): The file path to the OpenStreetMap (OSM) file.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing bus routes information.
+    """
+    # Obtain routes DataFrame from the OSM file
     df_routes = routes(osm_path)
-    bus_routes = pd.DataFrame(df_routes.loc[df_routes.route == 'bus'])
+
+    # Filter the routes DataFrame to include only bus routes
+    bus_routes = pd.DataFrame(df_routes.loc[df_routes['route'] == 'bus'])
+
+    # Return the DataFrame containing bus routes
     return bus_routes
-    
-def sorted_routes(routes_file):     
+
+
+# Sort the routes based on the 'ref' column    
+def sorted_routes(routes_file):
+    """
+    Sorts routes from a routes file based on the 'ref' column.
+
+    Args:
+        routes_file (pandas.DataFrame): A DataFrame containing routes information.
+
+    Returns:
+        pandas.DataFrame: The sorted routes DataFrame.
+    """
+    # Convert 'ref' column to integer for proper sorting
     routes_file['ref'] = routes_file['ref'].astype(int)
+
+    # Sort routes based on 'ref' column
     routes_file = routes_file.sort_values('ref')
+
+    # Reset the index of the DataFrame after sorting
     routes_file = routes_file.reset_index(drop=True)
+
+    # Return the sorted routes DataFrame
     return routes_file
 
-def check_to_column(sorted_routes_file, all_stations_file):
     
+# Create a dictionary to store the first station(destination actually) of each route
+# Firstly, check the 'to' column of 'sorted_routes_file' and the 'name' column of 'all_stations_file' to find all stations which name need to be revised according to 'all_stations_file', and revised them manually
+def check_to_column(sorted_routes_file, all_stations_file):
+    """
+    Checks the similarity between the 'to' column in sorted_routes_file and the 'name' column in all_stations_file.
+
+    Args:
+        sorted_routes_file (pandas.DataFrame): DataFrame containing sorted routes information.
+        all_stations_file (pandas.DataFrame): DataFrame containing all stations information.
+
+    Returns:
+        None (prints the result).
+    """
     def check_similarity(row):
+        """
+        Helper function to check the similarity of the 'to' value in each row with the 'name' values in all_stations_file.
+
+        Args:
+            row (pandas.Series): A row of the sorted_routes_file DataFrame.
+
+        Returns:
+            str or pandas.Series: Returns 'no need to revise' if the 'to' value is found in all_stations_file, 
+                                  otherwise returns the input row.
+        """
         if row['to'] in all_stations_file['name'].values:
             return 'no need to revise'
         else:
             return row
-    result = sorted_routes_file.apply(check_similarity, axis=1)
-    return print(result)
 
+    # Apply the check_similarity function to each row of sorted_routes_file
+    result = sorted_routes_file.apply(check_similarity, axis=1)
+
+    # Print the result
+    return print(result)
+    
+# Secondly, creates a dictionary that maps start station names to their corresponding destinations
 def start_station_dict(routes_file):
-    start_station_name_dict = {}
-    for index, row in routes_file.iterrows():
-        key = row['name']
-        value = row['to']
-        start_station_name_dict[key] = value
+    """
+    Creates a dictionary mapping start station names to their corresponding destinations.
+
+    Args:
+        routes_file (pandas.DataFrame): A DataFrame containing route information.
+
+    Returns:
+        dict: A dictionary mapping start station names to their destinations.
+    """
+    # Initialize an empty dictionary to store the mappings
+    start_station_name_dict = {} 
+
+    # Iterate over each row in the DataFrame
+    for index, row in routes_file.iterrows():  
+        # Get the start station name from the 'name' column
+        key = row['name'] 
+        # Get the destination from the 'to' column
+        value = row['to']  
+        # Add the mapping to the dictionary
+        start_station_name_dict[key] = value  
+    # Return the dictionary    
     return start_station_name_dict
 
+    
+# Creates a dictionary mapping line names to their corresponding indices
 def line_dict(routes_file):
-    line_num_dict = {}
-    for index, row in routes_file.iterrows():
-        key = row['name']
-        line_num_dict[key] = index
-    return line_num_dict
+    """
+    Creates a dictionary mapping line names to their corresponding indices.
 
+    Args:
+        routes_file (pandas.DataFrame): A DataFrame containing route information.
+
+    Returns:
+        dict: A dictionary mapping line names to their corresponding indices.
+    """
+    # Initialize an empty dictionary to store line names and indices
+    line_num_dict = {}  
+
+    # Iterate over each row in the routes_file DataFrame
+    for index, row in routes_file.iterrows():
+        # Get the value in the 'name' column of the current row
+        key = row['name']  
+        # Add an entry to the dictionary with the line name as the key and the index as the value
+        line_num_dict[key] = index  
+    
+    # Return the line_num_dict dictionary as the output
+    return line_num_dict  
+
+
+# Create a list for all_station with selected columns
 def all_station_list(all_stations_file):
-    all_stations_file= gpd.GeoDataFrame(all_stations_file.copy())
+    """
+    Extracts relevant information from a GeoDataFrame containing station data.
+
+    Args:
+        all_stations_file (GeoDataFrame): A GeoDataFrame containing station information.
+
+    Returns:
+        GeoDataFrame: A GeoDataFrame with selected columns ('name', 'geometry', 'geo_x', 'geo_y').
+
+    """
+    # Create a copy of the all_stations_file as a GeoDataFrame
+    all_stations_file = gpd.GeoDataFrame(all_stations_file.copy())
+    
+    # Select specific columns ('name', 'geometry', 'geo_x', 'geo_y') and reset the index
     all_stations_name = all_stations_file[['name', 'geometry', 'geo_x', 'geo_y']].reset_index(drop=True)
+    
+    # Return the resulting GeoDataFrame with selected columns
     return all_stations_name
+
     
 # Sorting the stations on each route
 def order_route(first_stop, unordered_route):
+    """
+    Orders the route based on the nearest stations.
+
+    Args:
+        first_stop (pandas.Series): The first stop to start the route.
+        unordered_route (pandas.DataFrame): The unordered route containing stops.
+
+    Returns:
+        pandas.DataFrame: The ordered route based on the nearest stations.
+    """
     new_order = []
+
+    # Remove the first stop from the unordered route
     remaining_route = unordered_route.drop(unordered_route[unordered_route.name == first_stop.name.values[0]].index).reset_index(drop=True)
-    tree = shapely.STRtree(remaining_route.geometry)
+
+    # Build an STRtree index for the remaining route
+    tree = shapely.strtree.STRtree(remaining_route.geometry)
+
+    # Append the first stop to the new order
     new_order.append(first_stop)
+
     for iter_ in range(len(remaining_route)):
         try:
             if iter_ == 0:
+                # Find the nearest station to the first stop
                 nearest_station = pd.DataFrame(remaining_route.iloc[tree.nearest(first_stop.geometry)[0]]).T
                 new_order.append(nearest_station)
                 remaining_route = remaining_route.drop(remaining_route[remaining_route.name == nearest_station.name.values[0]].index).reset_index(drop=True)
-                tree = shapely.STRtree(remaining_route.geometry)
+                tree = shapely.strtree.STRtree(remaining_route.geometry)
             elif iter_ == 1:
+                # Find the second nearest station to the first stop
                 second_station = pd.DataFrame(remaining_route.iloc[tree.nearest(nearest_station.geometry)[0]]).T
                 new_order.append(second_station)
                 remaining_route = remaining_route.drop(remaining_route[remaining_route.name == second_station.name.values[0]].index).reset_index(drop=True)
-                tree = shapely.STRtree(remaining_route.geometry)
+                tree = shapely.strtree.STRtree(remaining_route.geometry)
             else:
-                second_station = pd.DataFrame(remaining_route.iloc[tree.nearest(second_station.geometry)[0]]).T
-                new_order.append(second_station)
-                remaining_route = remaining_route.drop(remaining_route[remaining_route.name == second_station.name.values[0]].index).reset_index(drop=True)
-                tree = shapely.STRtree(remaining_route.geometry)
+                # Find the next nearest station based on the previous station
+                next_station = pd.DataFrame(remaining_route.iloc[tree.nearest(next_station.geometry)[0]]).T
+                new_order.append(next_station)
+                remaining_route = remaining_route.drop(remaining_route[remaining_route.name == next_station.name.values[0]].index).reset_index(drop=True)
+                tree = shapely.strtree.STRtree(remaining_route.geometry)
         except TypeError:
-            pass  # pass 'NoneType' object is not subscriptable Error
-    return pd.concat(new_order).reset_index(drop=True)
+            pass  # Ignore 'NoneType' object is not subscriptable error
 
-def order_stations_inline(tram_line_dict,all_tram_stations_name,tram_routes,tram_start_station_name_dict):
+    # Concatenate the ordered stops into a DataFrame
+    ordered_route = pd.concat(new_order).reset_index(drop=True)
+    return ordered_route
 
+
+# Orders stations based on the tram line routes and start station names
+def order_stations_inline(tram_line_dict, all_tram_stations_name, tram_routes, tram_start_station_name_dict):
     """
     Orders the tram stations based on the tram line routes and start station names.
 
     Args:
-    tram_line_dict (dict): A dictionary containing tram line information.
-    all_tram_stations_name (DataFrame): A DataFrame containing all tram station names.
-    tram_routes (DataFrame): A DataFrame containing tram route information.
-    tram_start_station_name_dict (dict): A dictionary mapping tram line names to their respective start station names.
+        tram_line_dict (dict): A dictionary containing tram line information.
+        all_tram_stations_name (DataFrame): A DataFrame containing all tram station names.
+        tram_routes (DataFrame): A DataFrame containing tram route information.
+        tram_start_station_name_dict (dict): A dictionary mapping tram line names to their respective start station names.
 
     Returns:
-    dict: A dictionary containing ordered tram station routes for each tram line.
+        dict: A dictionary containing ordered tram station routes for each tram line.
     """
     
+    # Create a copy of the tram_line_dict dictionary
     tram_stations_dict = tram_line_dict.copy()
 
-    for key,value in tram_stations_dict.items():
+    # Iterate over each key-value pair in tram_stations_dict
+    for key, value in tram_stations_dict.items():
         value1 = value
-        value2 = all_tram_stations_name.loc[all_tram_stations_name.within(tram_routes.iloc[value1].geometry.buffer(0.00000001))]   # buffer(0.0001) for bus 
+        # Filter the all_tram_stations_name DataFrame to include only stations within the buffer of the corresponding tram route
+        value2 = all_tram_stations_name.loc[all_tram_stations_name.within(tram_routes.iloc[value1].geometry.buffer(0.00000001))]
+        # Assign new IDs to the filtered stations
         value2['id'] = value2.reset_index().index
+        # Update the value in tram_stations_dict to include only necessary columns and reset the index
         tram_stations_dict[key] = value2[['id', 'name', 'geometry', 'geo_x', 'geo_y']].reset_index(drop=True)
-    
+
+    # Create copies of tram_line_dict for storing tram stations in order and ordered routes
     tram_stations_inorder_dict = tram_line_dict.copy()
     tram_order_route_dict = tram_line_dict.copy()
 
+    # Iterate over each line in tram_stations_inorder_dict
     for line in tram_stations_inorder_dict.keys():
         tram_stations_inorder = tram_stations_dict[line]
+        # Find the start station for the current line and update tram_stations_inorder_dict with only that station
         for i in range(len(tram_stations_inorder)):
             if tram_stations_inorder.iloc[i]['name'] == tram_start_station_name_dict[line]:
                 tram_stations_inorder_dict[line] = pd.DataFrame(tram_stations_inorder.iloc[i]).T
+        # Call the order_route function to order the remaining stations and store the result in tram_order_route_dict
         tram_order_route_dict[line] = order_route(tram_stations_inorder_dict[line], tram_stations_dict[line])
 
     return tram_order_route_dict
 
+    
+# Get a DataFrame with columns `s_coordinates` and `e_coordinates`
 def s_e_coordinates_pairs(s_e_coordinates):
     """
     Given a Pandas DataFrame `s_e_coordinates` with columns `s_coordinates_x`, `s_coordinates_y`, `e_coordinates_x`, 
@@ -560,6 +799,8 @@ def find_nearest_node(coordinate, nodes):
     # print(nodes.iloc[find_nearest[1]]['id'])
     return int(nodes.iloc[find_nearest]['id'])
 
+
+# Map the start and end coordinates to the nearest nodes in a transportation network
 def id_pairs(coordinates_pairs, nodes):
     """
     Map the start and end coordinates to the nearest nodes in a transportation network.
@@ -586,6 +827,8 @@ def id_pairs(coordinates_pairs, nodes):
         
     return id_pairs
 
+
+#  Generates ID pairs for each station in each line
 def id_pairs_inline(tram_line_dict,tram_order_route_dict):
     """
     Generates ID pairs for the starting and ending stations of tram lines.
