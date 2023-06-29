@@ -706,7 +706,7 @@ def order_stations_inline(tram_line_dict, all_tram_stations_name, tram_routes, t
     for key, value in tram_stations_dict.items():
         value1 = value
         # Filter the all_tram_stations_name DataFrame to include only stations within the buffer of the corresponding tram route
-        value2 = all_tram_stations_name.loc[all_tram_stations_name.within(tram_routes.iloc[value1].geometry.buffer(0.00000001))]
+        value2 = all_tram_stations_name.loc[all_tram_stations_name.within(tram_routes.iloc[value1].geometry.buffer(0.000001))]
         # Assign new IDs to the filtered stations
         value2['id'] = value2.reset_index().index
         # Update the value in tram_stations_dict to include only necessary columns and reset the index
@@ -863,4 +863,4 @@ def id_pairs_inline(tram_line_dict,tram_order_route_dict):
         tram_order_coordinates_pairs[line] = s_e_coordinates_pairs(tram_order_coordinates[line])
         tram_order_id_pairs[line] = id_pairs(tram_order_coordinates_pairs[line],nodes)
     
-    return(tram_order_id_pairs)
+    return tram_order_id_pairs
