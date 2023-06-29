@@ -555,10 +555,9 @@ def check_to_column(sorted_routes_file, all_stations_file):
             return row
 
     # Apply the check_similarity function to each row of sorted_routes_file
-    result = sorted_routes_file.apply(check_similarity, axis=1)
-
+    result = pd.DataFrame(sorted_routes_file.apply(check_similarity, axis=1))
     # Print the result
-    return print(result)
+    return print(result) 
     
 # Secondly, creates a dictionary that maps start station names to their corresponding destinations
 def start_station_dict(routes_file):
