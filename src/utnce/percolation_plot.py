@@ -31,7 +31,8 @@ def plot_routes_even(routes_file, edges, shortest_path_edges):
     """
     shortest_edges_list = list(shortest_path_edges.items())
     
-    num_plots = len(routes_file) // 2
+    # num_plots = len(routes_file) // 2
+    num_plots = len(shortest_path_edges) // 2
     
     colors = ['black', 'green', 'blue', 'orange', 'purple']
     
@@ -79,7 +80,8 @@ def plot_routes_odd(routes_file, edges, shortest_path_edges):
 
     shortest_edges_list = list(shortest_path_edges.items())
 
-    num_plots = len(routes_file) // 2
+    # num_plots = len(routes_file) // 2
+    num_plots = len(shortest_path_edges) // 2
 
     colors = ['black', 'green', 'blue', 'orange', 'purple']
 
@@ -125,7 +127,8 @@ def plot_routes(routes_file, edges, shortest_path_edges):
     shortest_edges_list = list(shortest_path_edges.items())
 
     # Get the number of plots based on the number of routes in routes_file
-    num_plots = len(routes_file)
+    # num_plots = len(routes_file)
+    num_plots = len(shortest_path_edges)
 
     # Define a list of colors for the routes
     colors = ['black', 'green', 'blue', 'orange', 'purple']
