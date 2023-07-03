@@ -513,7 +513,7 @@ def sorted_routes(routes_file):
         pandas.DataFrame: The sorted routes DataFrame.
     """
     # Convert 'ref' column to integer for proper sorting
-    routes_file['ref'] = routes_file['ref'].astype(int)
+    # routes_file['ref'] = routes_file['ref'].astype(int)
 
     # Sort routes based on 'ref' column
     routes_file = routes_file.sort_values('ref')
