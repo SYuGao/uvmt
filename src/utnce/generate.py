@@ -254,8 +254,4 @@ def bus():
 
 
 
-
-if __name__ == "__main__":
-
-    metro(sys.argv[1])
     
