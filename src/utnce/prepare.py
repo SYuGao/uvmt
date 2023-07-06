@@ -194,7 +194,28 @@ def road(osm_path):
     """
     return retrieve(osm_path, 'lines', ['highway'])
 
+ def bus_network(osm_path):
+    """
+    Extracts bus network data from an OpenStreetMap file at the specified file path and returns it as a Pandas DataFrame.
+
+    Parameters:
+    osm_path (str): The file path of the OpenStreetMap file.
+
+    Returns:
+    Pandas DataFrame: A DataFrame containing bus network data extracted from the OpenStreetMap file.
+    """
     
+    # Load road data from the given path
+    city_bus = road(osm_path)
+    
+    # Remove unwanted road types from the dataset
+    excluded_highways = ['cycleway', 'pedestrian', 'footway', 'living_street', 'residential']
+    city_bus = city_bus.loc[~city_bus.highway.isin(excluded_highways)]
+    
+    # Return the filtered road data
+    return city_bus
+
+     
 # Retrieve points data for transportation networks to get stations
 def public_stations(osm_path):
     """
