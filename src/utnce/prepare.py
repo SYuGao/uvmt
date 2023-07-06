@@ -17,13 +17,6 @@ warnings.filterwarnings("ignore")
 
 gdal.SetConfigOption("OSM_CONFIG_FILE", "osmconf.ini")
 
-
-# Define a helper function to generate pairs of consecutive elements in a list
-def pairwise(iterable):
-    "s -> (s0, s1), (s1, s2), (s2, s3), ..."
-    a, b = itertools.tee(iterable)
-    next(b, None)
-    return zip(a, b)
     
 # Define a helper function to generate permutations
 def permutations(iterable, r=None):
@@ -158,7 +151,8 @@ def subway_network(osm_path):
     df_railway = railway(osm_path)
     
     # Filter the DataFrame to include only subway railways
-    subway = df_railway.loc[df_railway.railway == 'subway']
+    included_railways = ['subway', 'light_rail']
+    subway = df_railway.loc[df_railway.railway.isin(included_railways)]
     
     return subway
 
@@ -194,24 +188,24 @@ def road(osm_path):
     """
     return retrieve(osm_path, 'lines', ['highway'])
 
- def bus_network(osm_path):
+def bus_network(osm_path):
     """
     Extracts bus network data from an OpenStreetMap file at the specified file path and returns it as a Pandas DataFrame.
-
+ 
     Parameters:
     osm_path (str): The file path of the OpenStreetMap file.
-
+ 
     Returns:
     Pandas DataFrame: A DataFrame containing bus network data extracted from the OpenStreetMap file.
     """
-    
+
     # Load road data from the given path
     city_bus = road(osm_path)
-    
+
     # Remove unwanted road types from the dataset
     excluded_highways = ['cycleway', 'pedestrian', 'footway', 'living_street', 'residential']
     city_bus = city_bus.loc[~city_bus.highway.isin(excluded_highways)]
-    
+
     # Return the filtered road data
     return city_bus
 
@@ -578,7 +572,9 @@ def check_to_column(sorted_routes_file, all_stations_file):
     # Apply the check_similarity function to each row of sorted_routes_file
     result = pd.DataFrame(sorted_routes_file.apply(check_similarity, axis=1))
     # Print the result
-    return print(result) 
+    # return print(result) 
+    return result
+    
     
 # Secondly, creates a dictionary that maps start station names to their corresponding destinations
 def start_station_dict(routes_file):
@@ -652,6 +648,32 @@ def all_station_list(all_stations_file):
     # Return the resulting GeoDataFrame with selected columns
     return all_stations_name
 
+# # Sorting the stations on each route
+# def order_route(first_stop, unordered_route):
+#     new_order = []
+#     remaining_route = unordered_route.drop(unordered_route[unordered_route.name == first_stop.name.values[0]].index).reset_index(drop=True)
+#     tree = shapely.STRtree(remaining_route.geometry)
+#     new_order.append(first_stop)
+#     for iter_ in range(len(remaining_route)):
+#         try:
+#             if iter_ == 0:
+#                 nearest_station = pd.DataFrame(remaining_route.iloc[tree.nearest(first_stop.geometry)[0]]).T
+#                 new_order.append(nearest_station)
+#                 remaining_route = remaining_route.drop(remaining_route[remaining_route.name == nearest_station.name.values[0]].index).reset_index(drop=True)
+#                 tree = shapely.STRtree(remaining_route.geometry)
+#             elif iter_ == 1:
+#                 second_station = pd.DataFrame(remaining_route.iloc[tree.nearest(nearest_station.geometry)[0]]).T
+#                 new_order.append(second_station)
+#                 remaining_route = remaining_route.drop(remaining_route[remaining_route.name == second_station.name.values[0]].index).reset_index(drop=True)
+#                 tree = shapely.STRtree(remaining_route.geometry)
+#             else:
+#                 second_station = pd.DataFrame(remaining_route.iloc[tree.nearest(second_station.geometry)[0]]).T
+#                 new_order.append(second_station)
+#                 remaining_route = remaining_route.drop(remaining_route[remaining_route.name == second_station.name.values[0]].index).reset_index(drop=True)
+#                 tree = shapely.STRtree(remaining_route.geometry)
+#         except TypeError:
+#             pass  # pass 'NoneType' object is not subscriptable Error
+#     return pd.concat(new_order).reset_index(drop=True)
     
 # Sorting the stations on each route
 def order_route(first_stop, unordered_route):
@@ -692,9 +714,9 @@ def order_route(first_stop, unordered_route):
                 tree = shapely.strtree.STRtree(remaining_route.geometry)
             else:
                 # Find the next nearest station based on the previous station
-                next_station = pd.DataFrame(remaining_route.iloc[tree.nearest(next_station.geometry)[0]]).T
-                new_order.append(next_station)
-                remaining_route = remaining_route.drop(remaining_route[remaining_route.name == next_station.name.values[0]].index).reset_index(drop=True)
+                second_station = pd.DataFrame(remaining_route.iloc[tree.nearest(second_station.geometry)[0]]).T
+                new_order.append(second_station)
+                remaining_route = remaining_route.drop(remaining_route[remaining_route.name == second_station.name.values[0]].index).reset_index(drop=True)
                 tree = shapely.strtree.STRtree(remaining_route.geometry)
         except TypeError:
             pass  # Ignore 'NoneType' object is not subscriptable error
@@ -849,7 +871,7 @@ def id_pairs(coordinates_pairs, nodes):
 
 
 #  Generates ID pairs for each station in each line
-def id_pairs_inline(tram_line_dict,tram_order_route_dict):
+def id_pairs_inline(tram_line_dict,tram_order_route_dict,nodes):
     """
     Generates ID pairs for the starting and ending stations of tram lines.
 

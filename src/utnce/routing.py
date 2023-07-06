@@ -16,6 +16,13 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+# Define a helper function to generate pairs of consecutive elements in a list
+def pairwise(iterable):
+    "s -> (s0, s1), (s1, s2), (s2, s3), ..."
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
 # Create a base Graph object as the basic topology network with 'edges' and 'nodes'
 def create_ground_graph(edges, nodes):
     """
@@ -104,7 +111,7 @@ def shortest_path(G, start_point_id, end_point_id, edges, weight = "weight"):   
     # Return the computed values as a tuple
     return path_s_e, length_s_e, short_path_edges
 
-def all_shortest_paths(id_pairs,edges):
+def all_shortest_paths(G, id_pairs,edges):
     """
     Find all shortest paths between start and end nodes and extract corresponding edges.
 
