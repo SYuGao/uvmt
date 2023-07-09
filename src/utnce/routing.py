@@ -111,7 +111,7 @@ def shortest_path(G, start_point_id, end_point_id, edges, weight = "weight"):   
     # Return the computed values as a tuple
     return path_s_e, length_s_e, short_path_edges
 
-def all_shortest_paths(G, id_pairs,edges):
+def all_shortest_paths(G, id_pairs, edges):
     """
     Find all shortest paths between start and end nodes and extract corresponding edges.
 

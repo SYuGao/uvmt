@@ -1,58 +1,38 @@
-import geopandas
-import geopandas as gpd
-import pandas as pd
-from osgeo import ogr,gdal
-import numpy 
-from shapely.wkb import loads
-from shapely.geometry import Point
-from shapely.geometry import LineString
-import matplotlib.pyplot as plt
-import openpyxl
-import itertools
-import networkx as nx
 from simplify import *
 from prepare import *
 from routing import *
 from percolation_plot import *
 
-
 import warnings
 warnings.filterwarnings("ignore")
 
+gdal.SetConfigOption("OSM_CONFIG_FILE", "osmconf.ini")
 
+
+# Subway/Metro
 def prepare_metro(osm_path):
-    """
-    This function checks the metro routes based on the given inputs.
 
-    Inputs:
-    - osm_path: The path to the OpenStreetMap (OSM) file containing subway network information.
-    - city: The name of the city. Default is 'Rotterdam'.
-
-    Outputs:
-    - check_name: A list of boolean values indicating whether the 'to' column in the metro routes matches the station names.
-    """
-    # Retrieve sub-stations information for the specified city
     city_sub_stations = sub_stations(osm_path)
 
-    # Retrieve subway network information for the specified city
+   
     city_sub_network = subway_network(osm_path)
 
-    # Prepare the network by extracting edges and nodes relevant to the specified city
+   
     edges, nodes = prepare_network(city_sub_network, city_sub_stations)
 
-    # Expand edges to include additional information if necessary
+    
     edges = expand_edges(edges)
     
-    # Retrieve sub-stations information for the specified city
+   
     city_sub_stations = sub_stations(osm_path)
 
-    # Retrieve metro routes information for the specified city
+    
     city_sub_routes = sub_routes(osm_path)
 
-    # Sort metro routes data
+    
     city_sub_routes = sorted_routes(city_sub_routes)
 
-    # Check if the values in the 'to' column of the metro routes match the station names
+    
     check_name = check_to_column(city_sub_routes, city_sub_stations)
 
     return city_sub_stations, edges, nodes, city_sub_routes, check_name
@@ -82,19 +62,7 @@ def recheck_metro_routes(replacement_dict, city_sub_stations, city_sub_routes):
     return city_sub_routes, check_name
 
 def metro(city_sub_stations, edges, nodes, city_sub_routes, city='Rotterdam'):
-    """
-    This function generates subway route information based on the given inputs.
-
-    Inputs:
-    - osm_path: The path to the OpenStreetMap (OSM) file containing subway network information.
-    - city_sub_routes: Dataframe or data structure containing subway route information for the specified city.
-    - city: The name of the city. Default is 'Rotterdam'.
-
-    Outputs:
-    - city_sub_shortest_path_pairs: A dictionary mapping subway lines to a list of shortest path pairs.
-    - city_sub_shortest_path_edges: A dictionary mapping subway lines to a list of edges in the shortest paths.
-    - city_sub_edges: A dictionary mapping subway lines to a list of all edges in the subway network.
-    """
+    
 
     # Create a dictionary mapping start stations to their corresponding routes
     city_sub_start_station_name_dict = start_station_dict(city_sub_routes)
@@ -140,21 +108,26 @@ def metro(city_sub_stations, edges, nodes, city_sub_routes, city='Rotterdam'):
     return city_sub_shortest_path_pairs, city_sub_shortest_path_edges, city_sub_edges
 
 
-
-
+# Tram
 def prepare_tram(osm_path):
     
     city_tram_stations = tram_stations(osm_path)
 
+    city_tram_network = tram_network(osm_path)
+
+    edges, nodes = prepare_network(city_tram_network, city_tram_stations)
+    
+    edges = expand_edges(edges)
+    
     city_tram_routes = tram_routes(osm_path)
 
-    return city_tram_stations, city_tram_routes
+    return city_tram_stations, edges, nodes, city_tram_routes
     
 def check_tram_routes(city_tram_stations, city_tram_routes):
 
     city_tram_routes = sorted_routes(city_tram_routes)
 
-    check_name = check_to_column(city_sub_routes, city_sub_stations)
+    check_name = check_to_column(city_tram_routes, city_tram_stations)
 
     return city_tram_routes, check_name
 
@@ -166,148 +139,117 @@ def recheck_tram_routes(replacement_dict, city_tram_stations, city_tram_routes):
 
     check_name = check_to_column(city_tram_routes, city_tram_stations)
 
-    return city_tram_routes, city_tram_stations, check_name
+    return city_tram_stations, city_tram_routes, check_name
 
-def tram(osm_path, city_tram_routes, city='Rotterdam'):
-    """
-    Performs various operations related to trams.
-    
-    Parameters:
-        osm_path (str): The path to the OpenStreetMap data.
-        city (str) : The name of the city.
-    
-    Returns:
-        tuple: A tuple containing multiple outputs related to trams.
-    """
-    # Retrieve tram stations from the OSM file
-    city_tram_stations = tram_stations(osm_path)
-    
-    # Retrieve tram network information from the OSM file
-    city_tram_network = tram_network(osm_path)
-    
-    # Prepare network edges and nodes based on tram stations and network information
-    edges, nodes = prepare_network(city_tram_network, city_tram_stations)
-    
-    # Expand edges (if required)
-    edges = expand_edges(edges)
-     
-    # Create dictionaries for start stations and tram lines
+def tram(city_tram_stations, edges, nodes, city_tram_routes, city='Rotterdam'):
+   
     city_tram_start_station_name_dict = start_station_dict(city_tram_routes)
+    
     city_tram_line_dict = line_dict(city_tram_routes)
     
-    # Get a list of all tram station names
+
     city_all_tram_stations_name = all_station_list(city_tram_stations)
     
-    # Order stations in line for each tram line
+
     city_tram_order_route_dict = order_stations_inline(city_tram_line_dict, city_all_tram_stations_name, city_tram_routes, city_tram_start_station_name_dict)
     
-    # Get ID pairs for ordered stations in line for each tram line
-    city_tram_order_id_pairs = id_pairs_inline(city_tram_line_dict, city_tram_order_route_dict)
+
+    city_tram_order_id_pairs = id_pairs_inline(city_tram_line_dict, city_tram_order_route_dict, nodes)
     
-    # Create a graph for the tram network
+
     G = create_ground_graph(edges, nodes)
     
-    # Calculate shortest paths for ordered station pairs in line for each tram line
+
     city_tram_shortest_path_pairs = city_tram_order_id_pairs.copy()
     duplicate_row_count = city_tram_order_id_pairs.copy()
     city_tram_shortest_path_edges = city_tram_order_id_pairs.copy()
     city_tram_edges = city_tram_order_id_pairs.copy()
 
     for line in city_tram_order_id_pairs.keys():
-        city_tram_shortest_path_pairs[line] = all_shortest_paths(city_tram_order_id_pairs[line], edges)
-        duplicate_row_count[line], city_tram_shortest_path_edges[line], city_tram_edges[line] = edges_with_count_weight(city_tram_shortest_path_pairs[line],edges)
+        
+        city_tram_shortest_path_pairs[line] = all_shortest_paths(G, city_tram_order_id_pairs[line], edges)
+        
+        duplicate_row_count[line], city_tram_shortest_path_edges[line], city_tram_edges[line] = edges_with_count_weight(city_tram_shortest_path_pairs[line], edges)
 
-    plot_routes_even(city_tram_routes,edges, city_tram_shortest_path_edges)
+    # plot_routes_even(city_tram_routes,edges, city_tram_shortest_path_edges)
     
-    plot_routes_odd(city_tram_routes,edges, city_tram_shortest_path_edges)
+    # plot_routes_odd(city_tram_routes,edges, city_tram_shortest_path_edges)
+    
+    plot_routes(city_tram_routes, edges, city_tram_shortest_path_edges)
     
     return city_tram_shortest_path_pairs, city_tram_shortest_path_edges, city_tram_edges
 
 
+# Bus
+def prepare_bus(osm_path):
+    
+    city_bus_stations = bus_stations(osm_path)
 
+    city_bus_network = bus_network(osm_path)
 
+    edges,nodes = prepare_network(city_bus_network, city_bus_stations)
+    
+    edges = expand_edges(edges)
+    
+    city_bus_routes = bus_routes(osm_path)
 
+    return city_bus_stations, edges, nodes, city_bus_routes
+    
+def check_bus_routes(city_bus_stations, city_bus_routes):
 
+    city_bus_routes = sorted_routes(city_bus_routes)
 
+    check_name = check_to_column(city_bus_routes, city_bus_stations)
 
+    return city_bus_routes, check_name
 
+def recheck_bus_routes(replacement_dict, city_bus_stations, city_bus_routes):
+
+    city_bus_routes['to'] = city_bus_routes['to'].replace(replacement_dict, regex=True).str.strip()
+
+    city_bus_routes = city_bus_routes.reset_index(drop=True)
+
+    check_name = check_to_column(city_bus_routes, city_bus_stations)
+
+    return city_bus_stations, city_bus_routes, check_name
+
+def bus(city_bus_stations, edges, nodes, city_bus_routes, city='Rotterdam'):
+
+    city_bus_start_station_name_dict = start_station_dict(city_bus_routes)
+
+    city_bus_line_dict = line_dict(city_bus_routes)
+    
+    city_bus_all_stations_name = all_station_list(city_bus_stations)
+    
+    city_bus_order_route_dict = order_stations_inline(city_bus_line_dict,city_bus_all_stations_name,city_bus_routes,city_bus_start_station_name_dict)
+    
+    city_bus_order_id_pairs = id_pairs_inline(city_bus_line_dict,city_bus_order_route_dict, nodes)
     
 
+    G = create_ground_graph(edges, nodes)
+    
 
-# def tram(osm_path,city='Rotterdam'):
-#     """
-#     Performs various operations related to trams.
+    city_bus_shortest_path_pairs = city_bus_order_id_pairs.copy()
     
-#     Parameters:
-#         osm_path (str): The path to the OpenStreetMap data.
-#         city (str) : The name of the city.
+    city_bus_duplicate_row_count = city_bus_order_id_pairs.copy()
     
-#     Returns:
-#         tuple: A tuple containing multiple outputs related to trams.
-#     """
-#     # Retrieve tram stations from the OSM file
-#     city_tram_stations = tram_stations(osm_path)
+    city_bus_shortest_path_edges = city_bus_order_id_pairs.copy()
     
-#     # Retrieve tram network information from the OSM file
-#     city_tram_network = tram_network(osm_path)
-    
-#     # Prepare network edges and nodes based on tram stations and network information
-#     edges, nodes = prepare_network(city_tram_network, city_tram_stations)
-    
-#     # Expand edges (if required)
-#     edges = expand_edges(edges)
-    
-#     # Retrieve tram routes information from the OSM file
-#     city_tram_routes = tram_routes(osm_path)
-    
-#     # Exclude tram routes with 'EMA' as the reference
-#     city_tram_routes = city_tram_routes.loc[city_tram_routes.ref != 'EMA']
-    
-#     # Sort tram routes
-#     city_tram_routes = sorted_routes(city_tram_routes)
-    
-#     # Check and revise tram routes and stations
-#     need_revised_row = check_to_column(city_tram_routes, city_tram_stations)
-    
-#     # Define replacement dictionary for specific string replacements
-#     replacement_dict = {
-#         ',': '',
-#         'Diemen': '',
-#         'Amsterdam': '',
-#         'Sloterdijk': 'Station Sloterdijk',
-#         'Osdorp Dijkgraafsplein': 'Dijkgraafplein',
-#         'Osdorp De Aker': 'Matterhorn'
-#     }
-    
-#     # Perform string replacements in the 'to' column of tram routes
-#     city_tram_routes['to'] = city_tram_routes['to'].replace(replacement_dict, regex=True).str.strip()
-#     city_tram_routes['to'] = city_tram_routes['to'].replace('Amstelveen Westwijk', 'Westwijk').str.strip()
-#     city_tram_routes = city_tram_routes.reset_index(drop=True)
-    
-#     # Create dictionaries for start stations and tram lines
-#     city_tram_start_station_name_dict = start_station_dict(city_tram_routes)
-#     city_tram_line_dict = line_dict(city_tram_routes)
-    
-#     # Get a list of all tram station names
-#     city_all_tram_stations_name = all_station_list(city_tram_stations)
-    
-#     # Order stations in line for each tram line
-#     city_tram_order_route_dict = order_stations_inline(city_tram_line_dict, city_all_tram_stations_name, city_tram_routes, city_tram_start_station_name_dict)
-    
-#     # Get ID pairs for ordered stations in line for each tram line
-#     city_tram_order_id_pairs = id_pairs_inline(city_tram_line_dict, city_tram_order_route_dict)
-    
-#     # Create a graph for the tram network
-#     G = create_ground_graph(edges, nodes)
-    
-#     # Calculate shortest paths for ordered station pairs in line for each tram line
-#     city_tram_shortest_path_pairs = city_tram_order_id_pairs.copy()
-#     duplicate_row_count = city_tram_order_id_pairs.copy()
-#     city_tram_shortest_path_edges = city_tram_order_id_pairs.copy()
-#     city_tram_edges = city_tram_order_id_pairs.copy()
+    city_bus_edges = city_bus_order_id_pairs.copy()
 
-#     for line in city_tram_order_id_pairs.keys():
-#         city_tram_shortest_path_pairs[line] = all_shortest_paths(city_tram_order_id_pairs[line], edges)
-#         duplicate_row_count[line], city_tram_shortest_path_edges[line], city_tram_edges[line] = edges_with_count_weight(city_tram_shortest_path_pairs[line],edges)
+    for line in city_bus_order_id_pairs.keys():
+        
+        city_bus_shortest_path_pairs[line] = all_shortest_paths(G, city_bus_order_id_pairs[line],edges)
+        
+        city_bus_duplicate_row_count[line], city_bus_shortest_path_edges[line], city_bus_edges[line] = edges_with_count_weight(city_bus_shortest_path_pairs[line], edges)
+
+    # plot_routes_even(city_bus_routes, edges, city_bus_shortest_path_edges)
     
-#     return plot_routes_even(city_tram_routes,edges, city_tram_shortest_path_edges), plot_routes_odd(city_tram_routes,edges, city_tram_shortest_path_edges), city_tram_shortest_path_pairs, city_tram_shortest_path_edges, city_tram_edges    
+    # plot_routes_odd(city_bus_routes, edges, city_bus_shortest_path_edges)
+    
+    plot_routes(city_bus_routes, edges, city_bus_shortest_path_edges)
+    
+    return city_bus_shortest_path_pairs, city_bus_shortest_path_edges, city_bus_edges
+    
+
+ 

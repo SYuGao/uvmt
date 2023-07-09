@@ -453,7 +453,7 @@ def routes(osm_path):
     # - The file path of the OpenStreetMap file
     # - A list of geometry types to extract (in this case, only multilinestrings)
     # - A list of tag keys to extract (in this case, 'route', 'name', and 'ref')
-    route_data = retrieve(osm_path, 'multilinestrings', ['route', 'to', 'name', 'ref'])#,'from'])
+    route_data = retrieve(osm_path, 'multilinestrings', ['route', 'to', 'name', 'ref', 'network', 'service'])#,'from'])
 
     # Return the extracted route data as a Pandas DataFrame
     return route_data
