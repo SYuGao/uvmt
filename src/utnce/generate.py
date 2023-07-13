@@ -433,3 +433,34 @@ def bus(city_bus_stations, edges, nodes, city_bus_routes, city='Rotterdam'):
     
     # Return the analyzed data
     return city_bus_shortest_path_pairs, city_bus_shortest_path_edges, city_bus_edges
+
+
+
+# Plot only one route
+def plot_line(edges, shortest_path_edges_dict, key):
+    """
+    Plot a specific line from a dictionary of shortest path edges.
+
+    Args:
+        edges (DataFrame or GeoDataFrame): All edges to be plotted as background.
+        shortest_path_edges_dict (dict): Dictionary of shortest path edges.
+        key (str): The specific key representing the desired line in the dictionary.
+
+    Returns:
+        None
+    """
+
+    # Create a figure and axis for the plot
+    fig, ax = plt.subplots(1, 1, figsize=(30, 20))
+
+    # Plot all edges as the background in gray with reduced opacity
+    gpd.GeoDataFrame(edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
+
+    # Retrieve the specific line based on the provided key
+    specific_line = shortest_path_edges_dict[key]
+
+    # Plot the specific line on top with increased linewidth and orange color
+    gpd.GeoDataFrame(specific_line.copy()).plot(ax=ax, zorder=1, linewidth=(specific_line.count_weight) * 2, color='orange')
+
+    # Set the title of the plot as the provided key
+    ax.set_title(key)
