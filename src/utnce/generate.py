@@ -138,7 +138,7 @@ def metro(city_sub_stations, edges, nodes, city_sub_routes, city='Rotterdam'):
     plot_routes(city_sub_routes, edges, city_sub_shortest_path_edges)
 
     # Return the calculated data
-    return city_sub_shortest_path_pairs, city_sub_shortest_path_edges, city_sub_edges
+    return city_sub_order_route_dict, city_sub_shortest_path_pairs, city_sub_shortest_path_edges, city_sub_edges
 
 
 # Tram
