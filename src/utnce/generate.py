@@ -284,7 +284,7 @@ def tram(city_tram_stations, edges, nodes, city_tram_routes, city='Rotterdam'):
     plot_routes(city_tram_routes, edges, city_tram_shortest_path_edges)
 
     # Return the calculated data
-    return city_tram_shortest_path_pairs, city_tram_shortest_path_edges, city_tram_edges
+    return city_tram_order_route_dict, city_tram_shortest_path_pairs, city_tram_shortest_path_edges, city_tram_edges
 
     
 # Bus
