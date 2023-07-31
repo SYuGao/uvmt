@@ -75,7 +75,7 @@ def add_columns_to_edges(order_route_dict, aggregation_functions, edges):
 
     return new_edges
 
-def transfer_shortest_path(s_e_coordinates,new_nodes):
+def transfer_shortest_path(s_e_coordinates, new_edges, new_nodes):
     
     start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
     start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
@@ -88,7 +88,7 @@ def transfer_shortest_path(s_e_coordinates,new_nodes):
 
     return path_s_e, length_s_e, short_path_edges,start_end_points_coordinates_pairs,start_end_nearest_id_pairs
 
-def walking_linear_distance(start_end_points_coordinates_pairs,start_end_nearest_id_pairs):
+def walking_linear_distance(start_end_points_coordinates_pairs,start_end_nearest_id_pairs,new_nodes):
     
     start_point_tuple = start_end_points_coordinates_pairs.iloc[0]['s_coordinates']
     end_point_tuple = start_end_points_coordinates_pairs.iloc[0]['e_coordinates']
@@ -108,7 +108,7 @@ def transfer_using_time(short_path_edges,distance_s_s_tuple,distance_e_e_tuple):
     time_on_transport = short_path_edges['time'].sum()
     speed_of_walking = 5000
     time_of_walking = distance_s_s_tuple/speed_of_walking + distance_e_e_tuple/speed_of_walking
-    using_time_hour = time_on_sub + time_of_walking
+    using_time_hour = time_on_transport + time_of_walking
     using_time_minutes = round(using_time_hour * 60)
     
     return using_time_hour,using_time_minutes
