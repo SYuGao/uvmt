@@ -432,7 +432,7 @@ def bus(city_bus_stations, edges, nodes, city_bus_routes, city='Rotterdam'):
     plot_routes(city_bus_routes, edges, city_bus_shortest_path_edges)
     
     # Return the analyzed data
-    return city_bus_shortest_path_pairs, city_bus_shortest_path_edges, city_bus_edges
+    return city_bus_order_route_dict, city_bus_shortest_path_pairs, city_bus_shortest_path_edges, city_bus_edges
 
 
 

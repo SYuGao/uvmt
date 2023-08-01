@@ -111,7 +111,7 @@ def transfer_using_time(short_path_edges,distance_s_s_tuple,distance_e_e_tuple):
     using_time_hour = time_on_transport + time_of_walking
     using_time_minutes = round(using_time_hour * 60)
     
-    return using_time_hour,using_time_minutes
+    return using_time_hour,using_time_minutes,time_on_transport,time_of_walking
 
 def plot_chosen_route(new_edges,short_path_edges):
 
