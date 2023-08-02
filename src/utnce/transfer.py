@@ -113,9 +113,66 @@ def transfer_using_time(short_path_edges,distance_s_s_tuple,distance_e_e_tuple):
     
     return using_time_hour,using_time_minutes,time_on_transport,time_of_walking
 
-def plot_chosen_route(new_edges,short_path_edges):
+
+def compare_using_time_st(choosesub_using_time_tuple, sub_new_edges, sub_short_path_edges,
+                       choosetram_using_time_tuple, tram_new_edges, tram_short_path_edges):
+    
+    using_time_subway = choosesub_using_time_tuple[1]
+    using_time_tram = choosetram_using_time_tuple[1]
+    
+    min_using_time = min(using_time_subway, using_time_tram)
+
+    if min_using_time == using_time_subway:
+        dict_fastest = {'using_time': using_time_subway,
+                 'new_edges': sub_new_edges,
+                 'shortest_path_edges': sub_short_path_edges
+                }
+    else:
+        dict_fastest = {'using_time': using_time_tram,
+                 'new_edges': tram_new_edges,
+                 'shortest_path_edges': tram_short_path_edges
+                }
+
+    return dict_fastest    
+
+def compare_using_time_stb(choosesub_using_time_tuple, sub_new_edges, sub_short_path_edges,
+                       choosetram_using_time_tuple, tram_new_edges, tram_short_path_edges,
+                       choosebus_using_time_tuple, bus_new_edges, bus_short_path_edges):
+    
+    using_time_subway = choosesub_using_time_tuple[1]
+    using_time_tram = choosetram_using_time_tuple[1]
+    using_time_bus = choosebus_using_time_tuple[1]
+    
+    min_using_time = min(using_time_subway, using_time_tram, using_time_bus)
+
+    if min_using_time == using_time_subway:
+        dict_fastest = {'using_time': using_time_subway,
+                 'new_edges': sub_new_edges,
+                 'shortest_path_edges': sub_short_path_edges
+                }
+    elif min_using_time == using_time_tram:
+        dict_fastest = {'using_time': using_time_tram,
+                 'new_edges': tram_new_edges,
+                 'shortest_path_edges': tram_short_path_edges
+                }
+    else:
+        dict_fastest = {'using_time': using_time_bus,
+                 'new_edges': bus_new_edges,
+                 'shortest_path_edges': bus_short_path_edges
+                }
+
+    return dict_fastest
+                           
+# def plot_chosen_route(c_new_edges,c_shortest_path_edges):
+
+#     fig, ax = plt.subplots(1, 1, figsize=(30, 20))
+
+#     gpd.GeoDataFrame(new_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
+#     gpd.GeoDataFrame(short_path_edges.copy()).plot(ax=ax, zorder=1, linewidth=(short_path_edges.count_weight) * 2, color='orange')
+
+def plot_chosen_route(dict_fastest):
 
     fig, ax = plt.subplots(1, 1, figsize=(30, 20))
 
-    gpd.GeoDataFrame(new_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
-    gpd.GeoDataFrame(short_path_edges.copy()).plot(ax=ax, zorder=1, linewidth=(short_path_edges.count_weight) * 2, color='orange')
+    gpd.GeoDataFrame(dict_fastest['new_edges'].copy()).plot(ax=ax, color='gray', alpha=0.2)
+    gpd.GeoDataFrame(dict_fastest['shortest_path_edges'].copy()).plot(ax=ax, zorder=1, linewidth=(dict_fastest['shortest_path_edges'].count_weight) * 2, color='orange')
