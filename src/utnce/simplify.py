@@ -561,6 +561,44 @@ def add_distances(network):
         nodes=network.nodes,
         edges=edges)
 
+# def add_travel_time(network):
+#     """Add travel time column to network edges. Time is in hours
+
+#     Args:
+#         network (class): A network composed of nodes (points in space) and edges (lines)
+
+#     Returns:
+#         network (class): A network composed of nodes (points in space) and edges (lines)
+
+#     """    
+#     if 'distance' not in network.nodes.columns:
+#         network = add_distances(network)
+#     speed_d = {
+#     'motorway':80000,
+#     'motorway_link': 65000,
+#     'trunk': 60000,
+#     'trunk_link':50000,
+#     'primary': 50000, # metres ph
+#     'primary_link':40000,
+#     'secondary': 40000, # metres ph
+#     'secondary_link':30000,
+#     'tertiary':30000,
+#     'tertiary_link': 20000,
+#     'unclassified':20000,
+#     'service':20000,
+#     'residential': 20000,  # mph
+#     }
+#     def calculate_time(edge):
+#         try:
+#             return edge['distance'] / (edge['maxspeed']*1000) #metres per hour
+#         except:
+#              return edge['distance'] / speed_d.get('unclassified')
+           
+
+#     network.edges['time'] = network.edges.apply(calculate_time,axis=1)
+#     return network
+
+
 def add_travel_time(network):
     """Add travel time column to network edges. Time is in hours
 
@@ -587,12 +625,22 @@ def add_travel_time(network):
     'unclassified':20000,
     'service':20000,
     'residential': 20000,  # mph
+    'subway': 25000,
+    'tram': 14000,
+    'bus': 12500, # mph
     }
     def calculate_time(edge):
         try:
             return edge['distance'] / (edge['maxspeed']*1000) #metres per hour
         except:
-             return edge['distance'] / speed_d.get('unclassified')
+            if edge['railway'] == 'subway' or edge['railway'] == 'light_rail':
+                return edge['distance'] / speed_d['subway']
+            elif edge['railway'] == 'tram':
+                return edge['distance'] / speed_d['tram']
+            elif  edge['highway'] == 'bus':
+                return edge['distance'] / speed_d['bus']
+            else:
+                 return edge['distance'] / speed_d.get('unclassified')
            
 
     network.edges['time'] = network.edges.apply(calculate_time,axis=1)

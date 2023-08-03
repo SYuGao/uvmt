@@ -89,7 +89,8 @@ def transfer_shortest_path(s_e_coordinates, new_edges, new_nodes):
     return path_s_e, length_s_e, short_path_edges,start_end_points_coordinates_pairs,start_end_nearest_id_pairs
 
 def walking_linear_distance(start_end_points_coordinates_pairs,start_end_nearest_id_pairs,new_nodes):
-    
+
+    # unite is meter
     start_point_tuple = start_end_points_coordinates_pairs.iloc[0]['s_coordinates']
     end_point_tuple = start_end_points_coordinates_pairs.iloc[0]['e_coordinates']
 
@@ -117,8 +118,8 @@ def transfer_using_time(short_path_edges,distance_s_s_tuple,distance_e_e_tuple):
 def compare_using_time_st(choosesub_using_time_tuple, sub_new_edges, sub_short_path_edges,
                        choosetram_using_time_tuple, tram_new_edges, tram_short_path_edges):
     
-    using_time_subway = choosesub_using_time_tuple[1]
-    using_time_tram = choosetram_using_time_tuple[1]
+    using_time_subway = choosesub_using_time_tuple[0]
+    using_time_tram = choosetram_using_time_tuple[0]
     
     min_using_time = min(using_time_subway, using_time_tram)
 
@@ -139,9 +140,9 @@ def compare_using_time_stb(choosesub_using_time_tuple, sub_new_edges, sub_short_
                        choosetram_using_time_tuple, tram_new_edges, tram_short_path_edges,
                        choosebus_using_time_tuple, bus_new_edges, bus_short_path_edges):
     
-    using_time_subway = choosesub_using_time_tuple[1]
-    using_time_tram = choosetram_using_time_tuple[1]
-    using_time_bus = choosebus_using_time_tuple[1]
+    using_time_subway = choosesub_using_time_tuple[0]
+    using_time_tram = choosetram_using_time_tuple[0]
+    using_time_bus = choosebus_using_time_tuple[0]
     
     min_using_time = min(using_time_subway, using_time_tram, using_time_bus)
 
@@ -163,7 +164,7 @@ def compare_using_time_stb(choosesub_using_time_tuple, sub_new_edges, sub_short_
 
     return dict_fastest
                            
-# def plot_chosen_route(c_new_edges,c_shortest_path_edges):
+# def plot_chosen_single_transport(c_new_edges,c_shortest_path_edges):
 
 #     fig, ax = plt.subplots(1, 1, figsize=(30, 20))
 
