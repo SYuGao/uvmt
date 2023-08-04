@@ -633,14 +633,16 @@ def add_travel_time(network):
         try:
             return edge['distance'] / (edge['maxspeed']*1000) #metres per hour
         except:
-            if edge['railway'] == 'subway' or edge['railway'] == 'light_rail':
-                return edge['distance'] / speed_d['subway']
-            elif edge['railway'] == 'tram':
-                return edge['distance'] / speed_d['tram']
-            elif  edge['highway'] == 'bus':
+            if 'railway' in network.edges.columns:
+                if edge['railway'] == 'subway' or edge['railway'] == 'light_rail':
+                    return edge['distance'] / speed_d['subway']
+                elif edge['railway'] == 'tram':
+                    return edge['distance'] / speed_d['tram']
+            elif 'highway' in network.edges.columns:
+                # if  edge['highway'] == 'bus':
                 return edge['distance'] / speed_d['bus']
             else:
-                 return edge['distance'] / speed_d.get('unclassified')
+                return edge['distance'] / speed_d.get('unclassified')
            
 
     network.edges['time'] = network.edges.apply(calculate_time,axis=1)

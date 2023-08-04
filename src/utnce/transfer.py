@@ -164,16 +164,16 @@ def compare_using_time_stb(choosesub_using_time_tuple, sub_new_edges, sub_short_
 
     return dict_fastest
                            
-# def plot_chosen_single_transport(c_new_edges,c_shortest_path_edges):
+def plot_chosen_single_transport(c_new_edges,c_shortest_path_edges):
 
-#     fig, ax = plt.subplots(1, 1, figsize=(30, 20))
+    fig, ax = plt.subplots(1, 1, figsize=(30, 20))
 
-#     gpd.GeoDataFrame(new_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
-#     gpd.GeoDataFrame(short_path_edges.copy()).plot(ax=ax, zorder=1, linewidth=(short_path_edges.count_weight) * 2, color='orange')
+    gpd.GeoDataFrame(new_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
+    gpd.GeoDataFrame(short_path_edges.copy()).plot(ax=ax, zorder=1, linewidth=(short_path_edges.weights / 50), color='blue')
 
 def plot_chosen_route(dict_fastest):
 
     fig, ax = plt.subplots(1, 1, figsize=(30, 20))
 
     gpd.GeoDataFrame(dict_fastest['new_edges'].copy()).plot(ax=ax, color='gray', alpha=0.2)
-    gpd.GeoDataFrame(dict_fastest['shortest_path_edges'].copy()).plot(ax=ax, zorder=1, linewidth=(dict_fastest['shortest_path_edges'].count_weight) * 2, color='orange')
+    gpd.GeoDataFrame(dict_fastest['shortest_path_edges'].copy()).plot(ax=ax, zorder=1, linewidth=(dict_fastest['shortest_path_edges'].weights / 50), color='orange')
