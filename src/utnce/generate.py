@@ -127,6 +127,7 @@ def metro(city_sub_stations, edges, nodes, city_sub_routes, city='Rotterdam'):
         # Count the duplicate rows, calculate the weighted edges for shortest paths,
         # and update the subway network edges for the current line
         duplicate_row_count[line], city_sub_shortest_path_edges[line], city_sub_edges[line] = edges_with_count_weight(city_sub_shortest_path_pairs[line], edges)
+        sub_edges = city_sub_edges[line]
     
     # # Plot the subway routes with even indices
     # plot_routes_even(city_sub_routes, edges, city_sub_shortest_path_edges)
@@ -138,7 +139,7 @@ def metro(city_sub_stations, edges, nodes, city_sub_routes, city='Rotterdam'):
     plot_routes(city_sub_routes, edges, city_sub_shortest_path_edges)
 
     # Return the calculated data
-    return city_sub_order_route_dict, city_sub_shortest_path_pairs, city_sub_shortest_path_edges, city_sub_edges
+    return city_sub_order_route_dict, city_sub_shortest_path_pairs, city_sub_shortest_path_edges, sub_edges #city_sub_edges
 
 
 # Tram
@@ -275,6 +276,7 @@ def tram(city_tram_stations, edges, nodes, city_tram_routes, city='Rotterdam'):
         # Count the duplicate rows, calculate the weighted edges for shortest paths,
         # and update the tram network edges for the current line
         duplicate_row_count[line], city_tram_shortest_path_edges[line], city_tram_edges[line] = edges_with_count_weight(city_tram_shortest_path_pairs[line], edges)
+        tram_edges = city_tram_edges[line]
         
     # plot_routes_even(city_tram_routes,edges, city_tram_shortest_path_edges)
     
@@ -284,7 +286,7 @@ def tram(city_tram_stations, edges, nodes, city_tram_routes, city='Rotterdam'):
     plot_routes(city_tram_routes, edges, city_tram_shortest_path_edges)
 
     # Return the calculated data
-    return city_tram_order_route_dict, city_tram_shortest_path_pairs, city_tram_shortest_path_edges, city_tram_edges
+    return city_tram_order_route_dict, city_tram_shortest_path_pairs, city_tram_shortest_path_edges, tram_edges # city_tram_edges
 
     
 # Bus
@@ -421,6 +423,7 @@ def bus(city_bus_stations, edges, nodes, city_bus_routes, city='Rotterdam'):
         
         # Compute edges with count and weight information for the line
         city_bus_duplicate_row_count[line], city_bus_shortest_path_edges[line], city_bus_edges[line] = edges_with_count_weight(city_bus_shortest_path_pairs[line], edges)
+        bus_edges = city_bus_edges[line]
 
     # # Plot the routes with even IDs
     # plot_routes_even(city_bus_routes, edges, city_bus_shortest_path_edges)
@@ -432,7 +435,7 @@ def bus(city_bus_stations, edges, nodes, city_bus_routes, city='Rotterdam'):
     plot_routes(city_bus_routes, edges, city_bus_shortest_path_edges)
     
     # Return the analyzed data
-    return city_bus_order_route_dict, city_bus_shortest_path_pairs, city_bus_shortest_path_edges, city_bus_edges
+    return city_bus_order_route_dict, city_bus_shortest_path_pairs, city_bus_shortest_path_edges, bus_edges # city_bus_edges
 
 
 
