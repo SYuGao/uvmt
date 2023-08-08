@@ -169,7 +169,7 @@ def plot_chosen_single_transport(c_new_edges,c_short_path_edges):
     fig, ax = plt.subplots(1, 1, figsize=(30, 20))
 
     gpd.GeoDataFrame(c_new_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
-    gpd.GeoDataFrame(c_short_path_edges.copy()).plot(ax=ax, zorder=1, linewidth=(c_short_path_edges.count_weight, color='blue')
+    gpd.GeoDataFrame(c_short_path_edges.copy()).plot(ax=ax, zorder=1, linewidth=c_short_path_edges.count_weight, color='blue')
     # gpd.GeoDataFrame(c_short_path_edges.copy()).plot(ax=ax, zorder=1, linewidth=(c_short_path_edges.weights / 50), color='blue')
 
 def plot_chosen_route(dict_fastest):
