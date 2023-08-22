@@ -64,7 +64,13 @@ def add_columns_to_nodes(order_route_dict, aggregation_functions, nodes):
     new_nodes = pd.merge(nodes, new_order_route_stations_df, on='geometry', how='outer')
     new_nodes['transfer'] = new_nodes['ref'].apply(check_ref)
     new_nodes['transfer'] = new_nodes['transfer'].apply(check_transfer)
-
+    
+    new_nodes_gdf = gpd.GeoDataFrame(new_nodes.copy())
+    new_nodes_gdf['geo_x'] = new_nodes_gdf.geometry.x
+    new_nodes_gdf['geo_y'] = new_nodes_gdf.geometry.y
+    new_nodes_gdf['coordinate_value'] = list(zip(new_nodes_gdf['geo_x'], new_nodes_gdf['geo_y']))
+    new_nodes = new_nodes_gdf
+    
     return new_nodes
 
 def add_columns_to_edges(order_route_dict, aggregation_functions, edges):
@@ -72,6 +78,9 @@ def add_columns_to_edges(order_route_dict, aggregation_functions, edges):
     order_route_stations_df = pd.concat(order_route_dict.values()).reset_index(drop=True)
     new_order_route_stations_df = order_route_stations_df.groupby('id').agg(aggregation_functions).reset_index()
     new_edges = pd.merge(edges, new_order_route_stations_df, on='geometry', how='outer')
+
+    new_edges = new_edges.drop(columns=['id_y'])
+    new_edges = new_edges.rename(columns={'id_x': 'id'})
 
     return new_edges
 
