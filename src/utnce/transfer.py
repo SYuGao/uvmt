@@ -14,6 +14,7 @@ import networkx as nx
 from simplify import *
 from prepare import *
 from routing import *
+from generate import *
 
 
 def add_ref_to_orderroutes_or_shortestpath_dict(order_route_dict, routes_df):
@@ -83,6 +84,78 @@ def add_columns_to_edges(order_route_dict, aggregation_functions, edges):
     new_edges = new_edges.rename(columns={'id_x': 'id'})
 
     return new_edges
+
+
+
+
+
+
+def s_e_node_df(s_e_coordinates, new_nodes):
+    start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
+    start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
+
+    start_end_nearest_id_pairs = id_pairs(start_end_points_coordinates_pairs, new_nodes)
+    start_node = new_nodes[new_nodes['id'] == start_end_nearest_id_pairs.loc[0]['s_id']]
+    end_node = new_nodes[new_nodes['id'] == start_end_nearest_id_pairs.loc[0]['e_id']]
+
+    return start_node, end_node
+
+
+def s_e_on_route_gdf(start_node, end_node, routes_df):
+    routes_gdf = gpd.GeoDataFrame(routes_df.copy())
+    s_e_node_gdf = gpd.GeoDataFrame(pd.concat([start_node.copy(), end_node.copy()],ignore_index=True))
+
+    s_node_on_route_gdf = routes_gdf[routes_gdf.geometry.intersects(s_e_node_gdf.iloc[0].geometry)]
+    e_node_on_route_gdf = routes_gdf[routes_gdf.geometry.intersects(s_e_node_gdf.iloc[1].geometry)]
+    
+    return s_node_on_route_gdf, e_node_on_route_gdf
+
+
+def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):
+    if s_node_on_route_gdf.equals(e_node_on_route_gdf) == True:
+        s_e_nodes_on_route_gdf = s_node_on_route_gdf
+        length_of_on_route_gdf = len(s_e_nodes_on_route_gdf)
+        if length_of_on_route_gdf == 1:
+            print(f"s_node and e_node are on the same one route")
+            return s_e_nodes_on_route_gdf
+        else:
+            print(f"s_node and e_node are on {length_of_on_route_gdf} same routes")
+            return s_e_nodes_on_route_gdf
+    else:
+        num_rows_s = len(s_node_on_route_gdf)
+        s_node_on_route_gdf['s_or_e'] = pd.Series(['s'] * num_rows_s, name='s_or_e', index=s_node_on_route_gdf.index)
+       
+        num_rows_e = len(e_node_on_route_gdf)
+        e_node_on_route_gdf['s_or_e'] = pd.Series(['e'] * num_rows_e, name='s_or_e', index=e_node_on_route_gdf.index)
+    
+        s_e_nodes_on_route_gdf = pd.concat([s_node_on_route_gdf, e_node_on_route_gdf], ignore_index=True)
+        
+        print(f"s_node and e_node are on different routes")
+        return s_e_nodes_on_route_gdf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def transfer_shortest_path(s_e_coordinates, new_edges, new_nodes):
     
