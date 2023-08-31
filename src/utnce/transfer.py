@@ -134,7 +134,21 @@ def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):
         return s_e_nodes_on_route_gdf
 
 
+def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
+    node_matched_all_stations_dict = {}
 
+    for key,df in order_route_dict.items():
+        matched_rows = node_on_route_gdf[node_on_route_gdf['name'] == key]
+        if not matched_rows.empty:
+            node_matched_all_stations_dict[key] = df
+    
+    return node_matched_all_stations_dict
+
+
+def find_nearest_station(coordinate, nodes):
+    node_tree = shapely.STRtree(nodes.geometry)
+    find_nearest = node_tree.nearest(shapely.points(coordinate))
+    return nodes.iloc[[find_nearest]]
 
 
 
