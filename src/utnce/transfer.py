@@ -71,6 +71,7 @@ def add_columns_to_nodes(order_route_dict, aggregation_functions, nodes):
     new_nodes_gdf['geo_y'] = new_nodes_gdf.geometry.y
     new_nodes_gdf['coordinate_value'] = list(zip(new_nodes_gdf['geo_x'], new_nodes_gdf['geo_y']))
     new_nodes = new_nodes_gdf
+    new_nodes = new_nodes.dropna(subset=['name'])
     
     return new_nodes
 
