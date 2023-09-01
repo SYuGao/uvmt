@@ -110,9 +110,11 @@ def s_e_on_route_gdf(start_node, end_node, routes_df):
     
     return s_node_on_route_gdf, e_node_on_route_gdf
 
-
 def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):
-    if s_node_on_route_gdf.equals(e_node_on_route_gdf) == True:
+    s_node_on_route_gdf_reset = s_node_on_route_gdf['ref'].reset_index(drop=True)
+    e_node_on_route_gdf_reset = e_node_on_route_gdf['ref'].reset_index(drop=True)
+
+    if s_node_on_route_gdf_reset.equals(e_node_on_route_gdf_reset) == True:
         s_e_nodes_on_route_gdf = s_node_on_route_gdf
         length_of_on_route_gdf = len(s_e_nodes_on_route_gdf)
         if length_of_on_route_gdf == 1:
@@ -132,6 +134,28 @@ def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):
         
         print(f"s_node and e_node are on different routes")
         return s_e_nodes_on_route_gdf
+        
+# def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):
+#     if s_node_on_route_gdf.equals(e_node_on_route_gdf) == True:
+#         s_e_nodes_on_route_gdf = s_node_on_route_gdf
+#         length_of_on_route_gdf = len(s_e_nodes_on_route_gdf)
+#         if length_of_on_route_gdf == 1:
+#             print(f"s_node and e_node are on the same one route")
+#             return s_e_nodes_on_route_gdf
+#         else:
+#             print(f"s_node and e_node are on {length_of_on_route_gdf} same routes")
+#             return s_e_nodes_on_route_gdf
+#     else:
+#         num_rows_s = len(s_node_on_route_gdf)
+#         s_node_on_route_gdf['s_or_e'] = pd.Series(['s'] * num_rows_s, name='s_or_e', index=s_node_on_route_gdf.index)
+       
+#         num_rows_e = len(e_node_on_route_gdf)
+#         e_node_on_route_gdf['s_or_e'] = pd.Series(['e'] * num_rows_e, name='s_or_e', index=e_node_on_route_gdf.index)
+    
+#         s_e_nodes_on_route_gdf = pd.concat([s_node_on_route_gdf, e_node_on_route_gdf], ignore_index=True)
+        
+#         print(f"s_node and e_node are on different routes")
+#         return s_e_nodes_on_route_gdf
 
 
 def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
