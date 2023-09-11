@@ -111,32 +111,74 @@ def s_e_on_route_gdf(start_node, end_node, routes_df):
     
     return s_node_on_route_gdf, e_node_on_route_gdf
 
-def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):
-    s_node_on_route_gdf_reset = s_node_on_route_gdf['ref'].reset_index(drop=True)
-    e_node_on_route_gdf_reset = e_node_on_route_gdf['ref'].reset_index(drop=True)
 
-    if s_node_on_route_gdf_reset.equals(e_node_on_route_gdf_reset) == True:
-        s_e_nodes_on_route_gdf = s_node_on_route_gdf
-        length_of_on_route_gdf = len(s_e_nodes_on_route_gdf)
-        if length_of_on_route_gdf == 1:
-            print(f"s_node and e_node are on the same one route")
-            return s_e_nodes_on_route_gdf
-        else:
-            print(f"s_node and e_node are on {length_of_on_route_gdf} same routes")
-            return s_e_nodes_on_route_gdf
-    else:
-        num_rows_s = len(s_node_on_route_gdf)
-        s_node_on_route_gdf['s_or_e'] = pd.Series(['s'] * num_rows_s, name='s_or_e', index=s_node_on_route_gdf.index)
-       
-        num_rows_e = len(e_node_on_route_gdf)
-        e_node_on_route_gdf['s_or_e'] = pd.Series(['e'] * num_rows_e, name='s_or_e', index=e_node_on_route_gdf.index)
+
+
+
+
+
+def route_decision():
     
-        s_e_nodes_on_route_gdf = pd.concat([s_node_on_route_gdf, e_node_on_route_gdf], ignore_index=True)
+    route_list = {51: station_df,
+                  52: station_df,
+                  53: station_df,
+                  54: station_df,
+            }
+
+    start_node = (5.0902342,52.2314)
+    end_node = (5.42902342,52.4314)
+
+
+    # catch the nearest metro station to start and end node on the same route
+    collect_stations_all = {}
+
+    for route in route_list:
         
-        print(f"s_node and e_node are on different routes")
-        return s_e_nodes_on_route_gdf
+        collect_stations = []
+        # find nearest station to start and end node
+        if route_list[route].distance(start_node).min() < 500: #meters
+            metro_station_start = route_list[route].distance(start_node).idxmin()
+            collect_stations.append(metro_station_start)
         
-# def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):
+        elif route_list[route].distance(end_node).min() < 500: #meters
+            metro_station_end = route_list[route].distance(end_node).idxmin()
+            collect_stations.append(metro_station_end)
+
+        collect_stations_all[route] = collect_stations
+
+    # catch the nearest metro station to start and end node on a different route
+
+    transfer_dataframe
+
+
+
+    
+# def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):    # version2
+#     s_node_on_route_gdf_reset = s_node_on_route_gdf['ref'].reset_index(drop=True)
+#     e_node_on_route_gdf_reset = e_node_on_route_gdf['ref'].reset_index(drop=True)
+
+#     if s_node_on_route_gdf_reset.equals(e_node_on_route_gdf_reset) == True:
+#         s_e_nodes_on_route_gdf = s_node_on_route_gdf
+#         length_of_on_route_gdf = len(s_e_nodes_on_route_gdf)
+#         if length_of_on_route_gdf == 1:
+#             print(f"s_node and e_node are on the same one route")
+#             return s_e_nodes_on_route_gdf
+#         else:
+#             print(f"s_node and e_node are on {length_of_on_route_gdf} same routes")
+#             return s_e_nodes_on_route_gdf
+#     else:
+#         num_rows_s = len(s_node_on_route_gdf)
+#         s_node_on_route_gdf['s_or_e'] = pd.Series(['s'] * num_rows_s, name='s_or_e', index=s_node_on_route_gdf.index)
+       
+#         num_rows_e = len(e_node_on_route_gdf)
+#         e_node_on_route_gdf['s_or_e'] = pd.Series(['e'] * num_rows_e, name='s_or_e', index=e_node_on_route_gdf.index)
+    
+#         s_e_nodes_on_route_gdf = pd.concat([s_node_on_route_gdf, e_node_on_route_gdf], ignore_index=True)
+        
+#         print(f"s_node and e_node are on different routes")
+#         return s_e_nodes_on_route_gdf
+        
+# def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):   # version1
 #     if s_node_on_route_gdf.equals(e_node_on_route_gdf) == True:
 #         s_e_nodes_on_route_gdf = s_node_on_route_gdf
 #         length_of_on_route_gdf = len(s_e_nodes_on_route_gdf)
