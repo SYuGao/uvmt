@@ -41,50 +41,123 @@ def create_tuple_column(df):
     
     return df
 
-def check_transfer(transfer):
+def add_columns_to_nodes(order_route_dict, nodes):
     
-    if isinstance(transfer, tuple) and len(transfer) > 1 and len(set(transfer)) > 1:
-        
-        return transfer
-
-def check_ref(ref):
-    
-    if isinstance(ref, str) and len(ref) > 1 and not all(item is None for item in ref):
-        ref = ref.replace(" ", "").replace(",", "")
-        
-        return tuple(ref)
-
-def add_columns_to_nodes(order_route_dict, aggregation_functions, nodes):
-        
     for key, df in order_route_dict.items():
         new_df = create_tuple_column(df)
         order_route_dict[key] = new_df
-        
+
     order_route_stations_df = pd.concat(order_route_dict.values()).reset_index(drop=True)
-    new_order_route_stations_df = order_route_stations_df.groupby('coordinate_value').agg(aggregation_functions).reset_index()
-    new_nodes = pd.merge(nodes, new_order_route_stations_df, on='geometry', how='outer')
-    new_nodes['transfer'] = new_nodes['ref'].apply(check_ref)
-    new_nodes['transfer'] = new_nodes['transfer'].apply(check_transfer)
+
+    stations_name_ref = order_route_stations_df.copy()
+    stations_name_ref = stations_name_ref[['name','ref']]
+    stations_name_ref = stations_name_ref.drop_duplicates()
+    stations_name_ref.reset_index(drop=True,inplace=True)
+    stations_name_ref = stations_name_ref.groupby('name').agg({'ref': lambda x: ', '.join(x)})
+    stations_name_ref.reset_index(inplace=True)
+
+    order_route_stations_df = pd.merge(order_route_stations_df, stations_name_ref, on='name', how='left')
+    order_route_stations_df = order_route_stations_df.drop_duplicates(subset='coordinate_value').reset_index(drop=True)
+    order_route_stations_df = order_route_stations_df[['name','geometry','geo_x','geo_y','coordinate_value','route_name_list','route','ref_y']]
+    order_route_stations_df.rename(columns={'ref_y': 'ref'}, inplace=True)
+    
+    new_nodes = pd.merge(nodes, order_route_stations_df, on='geometry', how='right')
     
     new_nodes_gdf = gpd.GeoDataFrame(new_nodes.copy())
     new_nodes_gdf['geo_x'] = new_nodes_gdf.geometry.x
     new_nodes_gdf['geo_y'] = new_nodes_gdf.geometry.y
     new_nodes_gdf['coordinate_value'] = list(zip(new_nodes_gdf['geo_x'], new_nodes_gdf['geo_y']))
     new_nodes = new_nodes_gdf
-    new_nodes = new_nodes.dropna(subset=['name'])
+
+    new_nodes['transfer'] = None
+    def fill_transfer(row):
+        if ',' in row['ref']:
+            return row['ref']
+        else:
+            return None
+    new_nodes['transfer'] = new_nodes.apply(fill_transfer, axis=1)
     
     return new_nodes
 
-def add_columns_to_edges(order_route_dict, aggregation_functions, edges):
+def add_columns_to_edges(shortest_path_edges,edges):
     
-    order_route_stations_df = pd.concat(order_route_dict.values()).reset_index(drop=True)
-    new_order_route_stations_df = order_route_stations_df.groupby('id').agg(aggregation_functions).reset_index()
-    new_edges = pd.merge(edges, new_order_route_stations_df, on='geometry', how='outer')
+    shortest_path_edges_df = pd.concat(shortest_path_edges.values()).reset_index(drop=True)
 
-    new_edges = new_edges.drop(columns=['id_y'])
-    new_edges = new_edges.rename(columns={'id_x': 'id'})
-
+    edges_id_ref = shortest_path_edges_df.copy()
+    edges_id_ref = edges_id_ref[['id','ref']]
+    edges_id_ref = edges_id_ref.drop_duplicates()
+    edges_id_ref.reset_index(drop=True,inplace=True)
+    edges_id_ref = edges_id_ref.groupby('id').agg({'ref': lambda x: ', '.join(x)})
+    edges_id_ref.reset_index(inplace=True)
+    
+    shortest_path_edges_df = pd.merge(shortest_path_edges_df, edges_id_ref, on='id', how='left')
+    shortest_path_edges_df = shortest_path_edges_df.drop_duplicates(subset = 'id').reset_index(drop=True)
+    shortest_path_edges_df = shortest_path_edges_df.drop(columns=['ref_x'])
+    shortest_path_edges_df = shortest_path_edges_df.rename(columns={'ref_y': 'ref'})
+    
+    new_edges = pd.merge(edges, shortest_path_edges_df, on='geometry', how='outer')
+    
+    new_edges = new_edges[['osm_id_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x','count_weight','route_name_list','route','ref']]
+    new_edges = new_edges.rename(columns={'osm_id_x':'osm_id', 
+                                     'railway_x':'railway', 
+                                     'service_x':'service', 
+                                     'id_x':'id', 
+                                     'from_id_x':'from_id', 
+                                     'to_id_x':'to_id', 
+                                     'distance_x':'distance', 
+                                     'time_x':'time', 
+                                     'weights_x':'weights', 
+                                     'to_from_x':'to_from', 
+                                     'from_to_x':'from_to'})
     return new_edges
+
+
+# def check_transfer(transfer):
+    
+#     if isinstance(transfer, tuple) and len(transfer) > 1 and len(set(transfer)) > 1:
+        
+#         return transfer
+
+# def check_ref(ref):
+    
+#     if isinstance(ref, str) and len(ref) > 1 and not all(item is None for item in ref):
+#         ref = ref.replace(" ", "").replace(",", "")
+        
+#         return tuple(ref)
+
+# def add_columns_to_nodes(order_route_dict, aggregation_functions, nodes):
+        
+#     for key, df in order_route_dict.items():
+#         new_df = create_tuple_column(df)
+#         order_route_dict[key] = new_df
+        
+#     order_route_stations_df = pd.concat(order_route_dict.values()).reset_index(drop=True)
+#     new_order_route_stations_df = order_route_stations_df.groupby('coordinate_value').agg(aggregation_functions).reset_index()
+#     new_nodes = pd.merge(nodes, new_order_route_stations_df, on='geometry', how='outer')
+    
+#     # add_transfer(tuple)_to_new_nodes
+#     new_nodes['transfer'] = new_nodes['ref'].apply(check_ref)
+#     new_nodes['transfer'] = new_nodes['transfer'].apply(check_transfer)
+    
+#     new_nodes_gdf = gpd.GeoDataFrame(new_nodes.copy())
+#     new_nodes_gdf['geo_x'] = new_nodes_gdf.geometry.x
+#     new_nodes_gdf['geo_y'] = new_nodes_gdf.geometry.y
+#     new_nodes_gdf['coordinate_value'] = list(zip(new_nodes_gdf['geo_x'], new_nodes_gdf['geo_y']))
+#     new_nodes = new_nodes_gdf
+#     new_nodes = new_nodes.dropna(subset=['name'])
+    
+#     return new_nodes
+
+# def add_columns_to_edges(order_route_dict, aggregation_functions, edges):
+    
+#     order_route_stations_df = pd.concat(order_route_dict.values()).reset_index(drop=True)
+#     new_order_route_stations_df = order_route_stations_df.groupby('id').agg(aggregation_functions).reset_index()
+#     new_edges = pd.merge(edges, new_order_route_stations_df, on='geometry', how='outer')
+
+#     new_edges = new_edges.drop(columns=['id_y'])
+#     new_edges = new_edges.rename(columns={'id_x': 'id'})
+
+#     return new_edges
 
 
 
