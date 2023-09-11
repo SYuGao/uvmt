@@ -17,100 +17,286 @@ from routing import *
 from generate import *
 
 
-def add_ref_to_orderroutes_or_shortestpath_dict(order_route_dict, routes_df):
+# def add_ref_to_orderroutes_or_shortestpath_dict(order_route_dict, routes_df):
        
+#     route_name_list = list(order_route_dict.keys())
+#     for key, df in order_route_dict.items():
+#         df['route_name_list'] = key
+
+#     for line in order_route_dict.keys():
+#         order_route_list = order_route_dict[line]
+#         for i in range(len(order_route_list)):
+#             for j in range(len(routes_df)):
+#                 if order_route_list.iloc[i]['route_name_list'] == routes_df.iloc[j]['name']:
+#                     order_route_list.at[i, 'ref'] = routes_df.iloc[j]['ref']
+#                     order_route_list.at[i, 'route'] = routes_df.iloc[j]['route']
+#                     break 
+#         order_route_dict[line] = order_route_list
+        
+#     return order_route_dict
+
+def add_ref_to_orderroutes_or_shortestpath_dict(order_route_dict, routes_df):
+    """
+    Add 'ref' and 'route' information from routes_df to order_route_dict.
+
+    Args:
+        order_route_dict (dict): A dictionary where keys are route names and values are DataFrames containing route data.
+        routes_df (pandas.DataFrame): A DataFrame containing information about routes, including 'name', 'ref', and 'route' columns.
+
+    Returns:
+        dict: The modified order_route_dict with 'ref' and 'route' information added to each route's DataFrame.
+    """
+    
+    # Get a list of route names from the keys of order_route_dict
     route_name_list = list(order_route_dict.keys())
+    
+    # Assign the route name to a new column 'route_name_list' in each DataFrame in order_route_dict
     for key, df in order_route_dict.items():
         df['route_name_list'] = key
 
+    # Iterate through each route in order_route_dict
     for line in order_route_dict.keys():
         order_route_list = order_route_dict[line]
+        
+        # Iterate through each row in the route's DataFrame
         for i in range(len(order_route_list)):
+            
+            # Iterate through each row in routes_df to find a match based on 'name'
             for j in range(len(routes_df)):
+                
+                # Check if the 'name' in order_route_list matches the 'name' in routes_df
                 if order_route_list.iloc[i]['route_name_list'] == routes_df.iloc[j]['name']:
+                    
+                    # If there is a match, assign 'ref' and 'route' values to the corresponding row in order_route_list
                     order_route_list.at[i, 'ref'] = routes_df.iloc[j]['ref']
                     order_route_list.at[i, 'route'] = routes_df.iloc[j]['route']
+                    
+                    # Break the inner loop as we found a match for the current route
                     break 
+        
+        # Update the route in order_route_dict with the modified order_route_list
         order_route_dict[line] = order_route_list
         
+    # Return the modified order_route_dict
     return order_route_dict
 
-def create_tuple_column(df):
+# def create_tuple_column(df):
     
+#     df['coordinate_value'] = list(zip(df['geo_x'], df['geo_y']))
+    
+#     return df
+def create_tuple_column(df):
+    """
+    Create a new column 'coordinate_value' in the DataFrame df by combining 'geo_x' and 'geo_y' columns into tuples.
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame containing 'geo_x' and 'geo_y' columns.
+
+    Returns:
+        pandas.DataFrame: The modified DataFrame with an additional 'coordinate_value' column.
+
+    Example:
+        Input DataFrame:
+        |  geo_x  |  geo_y  |
+        |---------|---------|
+        |  1.234  |  3.456  |
+        |  2.345  |  4.567  |
+
+        Output DataFrame:
+        |  geo_x  |  geo_y  |  coordinate_value  |
+        |---------|---------|--------------------|
+        |  1.234  |  3.456  |   (1.234, 3.456)   |
+        |  2.345  |  4.567  |   (2.345, 4.567)   |
+    """
+    
+    # Combine 'geo_x' and 'geo_y' columns into tuples and store the result in a new 'coordinate_value' column
     df['coordinate_value'] = list(zip(df['geo_x'], df['geo_y']))
     
+    # Return the modified DataFrame
     return df
 
-def add_columns_to_nodes(order_route_dict, nodes):
+# def add_columns_to_nodes(order_route_dict, nodes):
     
+#     for key, df in order_route_dict.items():
+#         new_df = create_tuple_column(df)
+#         order_route_dict[key] = new_df
+
+#     order_route_stations_df = pd.concat(order_route_dict.values()).reset_index(drop=True)
+
+#     stations_name_ref = order_route_stations_df.copy()
+#     stations_name_ref = stations_name_ref[['name','ref']]
+#     stations_name_ref = stations_name_ref.drop_duplicates()
+#     stations_name_ref.reset_index(drop=True,inplace=True)
+#     stations_name_ref = stations_name_ref.groupby('name').agg({'ref': lambda x: ', '.join(x)})
+#     stations_name_ref.reset_index(inplace=True)
+
+#     order_route_stations_df = pd.merge(order_route_stations_df, stations_name_ref, on='name', how='left')
+#     order_route_stations_df = order_route_stations_df.drop_duplicates(subset='coordinate_value').reset_index(drop=True)
+#     order_route_stations_df = order_route_stations_df[['name','geometry','geo_x','geo_y','coordinate_value','route_name_list','route','ref_y']]
+#     order_route_stations_df.rename(columns={'ref_y': 'ref'}, inplace=True)
+    
+#     new_nodes = pd.merge(nodes, order_route_stations_df, on='geometry', how='right')
+    
+#     new_nodes_gdf = gpd.GeoDataFrame(new_nodes.copy())
+#     new_nodes_gdf['geo_x'] = new_nodes_gdf.geometry.x
+#     new_nodes_gdf['geo_y'] = new_nodes_gdf.geometry.y
+#     new_nodes_gdf['coordinate_value'] = list(zip(new_nodes_gdf['geo_x'], new_nodes_gdf['geo_y']))
+#     new_nodes = new_nodes_gdf
+
+#     new_nodes['transfer'] = None
+#     def fill_transfer(row):
+#         if ',' in row['ref']:
+#             return row['ref']
+#         else:
+#             return None
+#     new_nodes['transfer'] = new_nodes.apply(fill_transfer, axis=1)
+    
+#     return new_nodes
+
+def add_columns_to_nodes(order_route_dict, nodes):
+    """
+    Enriches the 'nodes' DataFrame with additional columns based on data from 'order_route_dict'.
+
+    Args:
+        order_route_dict (dict): A dictionary where keys are route names and values are DataFrames containing route data.
+        nodes (geopandas.GeoDataFrame): A GeoDataFrame containing information about nodes/points.
+
+    Returns:
+        geopandas.GeoDataFrame: The modified 'nodes' GeoDataFrame with additional columns added.
+    """
+    
+    # Iterate through each route in order_route_dict
     for key, df in order_route_dict.items():
+        # Create a new DataFrame 'new_df' by calling 'create_tuple_column' function on the route's DataFrame
         new_df = create_tuple_column(df)
+        # Update the route's DataFrame in order_route_dict with the newly created 'new_df'
         order_route_dict[key] = new_df
 
+    # Concatenate all DataFrames in order_route_dict and reset the index
     order_route_stations_df = pd.concat(order_route_dict.values()).reset_index(drop=True)
 
-    stations_name_ref = order_route_stations_df.copy()
-    stations_name_ref = stations_name_ref[['name','ref']]
-    stations_name_ref = stations_name_ref.drop_duplicates()
-    stations_name_ref.reset_index(drop=True,inplace=True)
-    stations_name_ref = stations_name_ref.groupby('name').agg({'ref': lambda x: ', '.join(x)})
-    stations_name_ref.reset_index(inplace=True)
-
-    order_route_stations_df = pd.merge(order_route_stations_df, stations_name_ref, on='name', how='left')
-    order_route_stations_df = order_route_stations_df.drop_duplicates(subset='coordinate_value').reset_index(drop=True)
-    order_route_stations_df = order_route_stations_df[['name','geometry','geo_x','geo_y','coordinate_value','route_name_list','route','ref_y']]
-    order_route_stations_df.rename(columns={'ref_y': 'ref'}, inplace=True)
+    # Create a DataFrame 'stations_name_ref' containing only 'name' and 'ref' columns and remove duplicates
+    stations_name_ref = order_route_stations_df[['name', 'ref']].drop_duplicates().reset_index(drop=True)
     
+    # Group 'stations_name_ref' by 'name' and aggregate 'ref' values into a comma-separated string
+    stations_name_ref = stations_name_ref.groupby('name').agg({'ref': lambda x: ', '.join(x)}).reset_index()
+
+    # Merge 'order_route_stations_df' with 'stations_name_ref' on 'name' to add 'ref' information
+    order_route_stations_df = pd.merge(order_route_stations_df, stations_name_ref, on='name', how='left')
+    
+    # Remove duplicates based on 'coordinate_value' and select relevant columns
+    order_route_stations_df = order_route_stations_df.drop_duplicates(subset='coordinate_value').reset_index(drop=True)
+    order_route_stations_df = order_route_stations_df[['name', 'geometry', 'geo_x', 'geo_y', 'coordinate_value', 'route_name_list', 'route', 'ref_y']]
+    
+    # Rename the 'ref_y' column to 'ref'
+    order_route_stations_df.rename(columns={'ref_y': 'ref'}, inplace=True)
+
+    # Merge 'nodes' with 'order_route_stations_df' based on 'geometry' to add additional data to 'nodes'
     new_nodes = pd.merge(nodes, order_route_stations_df, on='geometry', how='right')
     
+    # Create a GeoDataFrame 'new_nodes_gdf' from 'new_nodes' and extract 'geo_x', 'geo_y', and 'coordinate_value' columns
     new_nodes_gdf = gpd.GeoDataFrame(new_nodes.copy())
     new_nodes_gdf['geo_x'] = new_nodes_gdf.geometry.x
     new_nodes_gdf['geo_y'] = new_nodes_gdf.geometry.y
     new_nodes_gdf['coordinate_value'] = list(zip(new_nodes_gdf['geo_x'], new_nodes_gdf['geo_y']))
     new_nodes = new_nodes_gdf
 
+    # Initialize a 'transfer' column in 'new_nodes' with None values
     new_nodes['transfer'] = None
+    
+    # Define a function 'fill_transfer' to populate 'transfer' based on 'ref'
     def fill_transfer(row):
         if ',' in row['ref']:
             return row['ref']
         else:
             return None
+    
+    # Apply the 'fill_transfer' function to populate 'transfer' column
     new_nodes['transfer'] = new_nodes.apply(fill_transfer, axis=1)
     
+    # Return the modified 'new_nodes' GeoDataFrame
     return new_nodes
 
-def add_columns_to_edges(shortest_path_edges,edges):
+# def add_columns_to_edges(shortest_path_edges,edges):
     
+#     shortest_path_edges_df = pd.concat(shortest_path_edges.values()).reset_index(drop=True)
+
+#     edges_id_ref = shortest_path_edges_df.copy()
+#     edges_id_ref = edges_id_ref[['id','ref']]
+#     edges_id_ref = edges_id_ref.drop_duplicates()
+#     edges_id_ref.reset_index(drop=True,inplace=True)
+#     edges_id_ref = edges_id_ref.groupby('id').agg({'ref': lambda x: ', '.join(x)})
+#     edges_id_ref.reset_index(inplace=True)
+    
+#     shortest_path_edges_df = pd.merge(shortest_path_edges_df, edges_id_ref, on='id', how='left')
+#     shortest_path_edges_df = shortest_path_edges_df.drop_duplicates(subset = 'id').reset_index(drop=True)
+#     shortest_path_edges_df = shortest_path_edges_df.drop(columns=['ref_x'])
+#     shortest_path_edges_df = shortest_path_edges_df.rename(columns={'ref_y': 'ref'})
+    
+#     new_edges = pd.merge(edges, shortest_path_edges_df, on='geometry', how='outer')
+    
+#     new_edges = new_edges[['osm_id_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x','count_weight','route_name_list','route','ref']]
+#     new_edges = new_edges.rename(columns={'osm_id_x':'osm_id', 
+#                                      'railway_x':'railway', 
+#                                      'service_x':'service', 
+#                                      'id_x':'id', 
+#                                      'from_id_x':'from_id', 
+#                                      'to_id_x':'to_id', 
+#                                      'distance_x':'distance', 
+#                                      'time_x':'time', 
+#                                      'weights_x':'weights', 
+#                                      'to_from_x':'to_from', 
+#                                      'from_to_x':'from_to'})
+#     return new_edges
+
+def add_columns_to_edges(shortest_path_edges, edges):
+    """
+    Enriches the 'edges' DataFrame with additional columns based on data from 'shortest_path_edges'.
+
+    Args:
+        shortest_path_edges (dict): A dictionary where keys are edge IDs and values are DataFrames containing edge data.
+        edges (pandas.DataFrame): A DataFrame containing information about edges, including 'geometry', 'osm_id', and other columns.
+
+    Returns:
+        pandas.DataFrame: The modified 'edges' DataFrame with additional columns added.
+    """
+    
+    # Concatenate all DataFrames in shortest_path_edges into shortest_path_edges_df and reset the index
     shortest_path_edges_df = pd.concat(shortest_path_edges.values()).reset_index(drop=True)
 
-    edges_id_ref = shortest_path_edges_df.copy()
-    edges_id_ref = edges_id_ref[['id','ref']]
-    edges_id_ref = edges_id_ref.drop_duplicates()
-    edges_id_ref.reset_index(drop=True,inplace=True)
-    edges_id_ref = edges_id_ref.groupby('id').agg({'ref': lambda x: ', '.join(x)})
-    edges_id_ref.reset_index(inplace=True)
+    # Create a DataFrame 'edges_id_ref' containing only 'id' and 'ref' columns and remove duplicates
+    edges_id_ref = shortest_path_edges_df[['id', 'ref']].drop_duplicates().reset_index(drop=True)
     
+    # Group 'edges_id_ref' by 'id' and aggregate 'ref' values into a comma-separated string
+    edges_id_ref = edges_id_ref.groupby('id').agg({'ref': lambda x: ', '.join(x)}).reset_index()
+
+    # Merge 'shortest_path_edges_df' with 'edges_id_ref' on 'id' to add 'ref' information
     shortest_path_edges_df = pd.merge(shortest_path_edges_df, edges_id_ref, on='id', how='left')
-    shortest_path_edges_df = shortest_path_edges_df.drop_duplicates(subset = 'id').reset_index(drop=True)
+    
+    # Remove duplicate rows based on 'id', drop the 'ref_x' column, and rename 'ref_y' to 'ref'
+    shortest_path_edges_df = shortest_path_edges_df.drop_duplicates(subset='id').reset_index(drop=True)
     shortest_path_edges_df = shortest_path_edges_df.drop(columns=['ref_x'])
     shortest_path_edges_df = shortest_path_edges_df.rename(columns={'ref_y': 'ref'})
-    
+
+    # Merge 'edges' with 'shortest_path_edges_df' based on 'geometry' to add additional data to 'edges'
     new_edges = pd.merge(edges, shortest_path_edges_df, on='geometry', how='outer')
     
-    new_edges = new_edges[['osm_id_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x','count_weight','route_name_list','route','ref']]
-    new_edges = new_edges.rename(columns={'osm_id_x':'osm_id', 
-                                     'railway_x':'railway', 
-                                     'service_x':'service', 
-                                     'id_x':'id', 
-                                     'from_id_x':'from_id', 
-                                     'to_id_x':'to_id', 
-                                     'distance_x':'distance', 
-                                     'time_x':'time', 
-                                     'weights_x':'weights', 
-                                     'to_from_x':'to_from', 
-                                     'from_to_x':'from_to'})
+    # Select and rename relevant columns in 'new_edges'
+    new_edges = new_edges[['osm_id_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x', 'count_weight', 'route_name_list', 'route', 'ref']]
+    new_edges = new_edges.rename(columns={'osm_id_x': 'osm_id',
+                                         'railway_x': 'railway',
+                                         'service_x': 'service',
+                                         'id_x': 'id',
+                                         'from_id_x': 'from_id',
+                                         'to_id_x': 'to_id',
+                                         'distance_x': 'distance',
+                                         'time_x': 'time',
+                                         'weights_x': 'weights',
+                                         'to_from_x': 'to_from',
+                                         'from_to_x': 'from_to'})
+    
+    # Return the modified 'new_edges' DataFrame
     return new_edges
-
 
 # def check_transfer(transfer):
     
