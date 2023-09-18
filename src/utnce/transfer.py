@@ -296,7 +296,7 @@ def judge_on_route(s_on_route_ref, e_on_route_ref):   # version4
         else:
             print("There is something wrong with function----s_e_on_route_gdf")
     
-# One of e_on_route is the same as s_on_route
+### One of e_on_route is the same as s_on_route
 
 
 def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
@@ -322,6 +322,10 @@ def find_nearest_station(coordinate, nodes):
 
 
 
+
+
+
+    
 
 
 ###### ideas from elco-- judgement    
