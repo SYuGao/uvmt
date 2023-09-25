@@ -365,8 +365,6 @@ def find_nearest_station(coordinate, nodes):
 
 
 
-
-
 # def s_e_node_df(s_e_coordinates, new_nodes):
 #     start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
 #     start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
@@ -387,6 +385,73 @@ def find_nearest_station(coordinate, nodes):
     
 #     return s_node_on_route_gdf, e_node_on_route_gdf
 
+###### version3
+# def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):   
+#     s_on_route_ref = s_node_on_route_gdf[['ref']].reset_index(drop=True)
+#     e_on_route_ref = e_node_on_route_gdf[['ref']].reset_index(drop=True)
+
+#     length_s_on_route_ref = len(s_on_route_ref)
+#     length_e_on_route_ref = len(e_on_route_ref)
+
+#     if length_s_on_route_ref < 1:
+#         print("There is something wrong with function----s_e_on_route_gdf")
+
+    
+#     elif length_s_on_route_ref == 1:
+#         if length_e_on_route_ref > 1:
+#             s_e_on_route = pd.concat([s_on_route_ref,e_on_route_ref],ignore_index=True)
+#             if s_e_on_route.duplicated().sum() == 1:
+#                 print(f"One of e_on_route is the same as s_on_route:{s_on_route_ref.loc[0,'ref']}\n")
+#                 print("The next step is to find transfer stations of the rest of e_on_route and s_on_route, then find all stations between start_node/tansfer stations/end_node, finally calculate shortest path----using function ''")
+#                 return s_on_route_ref, e_on_route_ref
+#             else:
+#                 print(f"None of e_on_route is the same as s_on_route:{s_on_route_ref.loc[0,'ref']}\n")
+#                 print("The next step is to find transfer stations of all e_on_route and s_on_route, then find all stations between start_node/tansfer stations/end_node, finally calculate shortest path----using function ''")
+#                 return s_on_route_ref, e_on_route_ref
+
+#         elif length_e_on_route_ref == 1:
+#             if s_on_route_ref.equals(e_on_route_ref) == True:
+#                 print(f"s_node and e_node are on one same route:{s_on_route_ref.loc[0,'ref']}\n")
+#                 print("The next step is to find all stations between start_node and end_node, then calculate shortest path----using function '' ")
+#                 return s_on_route_ref, e_on_route_ref
+#             else:
+#                 print(f"s_node and e_node are on two different routes:{s_on_route_ref.loc[0,'ref']},{e_on_route_ref.loc[0,'ref']}")
+#                 print(f"The next step is to find transfer station of {s_on_route_ref.loc[0,'ref']} and {e_on_route_ref.loc[0,'ref']}, then find all stations between start_node and end_node, finally calculate shortest path----using function '' ")
+#                 return s_on_route_ref, e_on_route_ref
+
+#         else:
+#             print("There is something wrong with function----s_e_on_route_gdf")
+
+
+#     else:
+#         s_e_on_route = pd.concat([s_on_route_ref,e_on_route_ref],ignore_index=True)
+#         if length_e_on_route_ref > 1:
+#             if s_e_on_route.duplicated().sum() == len(s_on_route_ref):
+#                 print(f"s_node and e_node are on several same routes:{s_on_route_ref.ref.tolist()}\n")
+#                 print("The next step is to find all stations between start_node and end_node on each route,then calculate shortest path----using function '' ")
+#                 return s_on_route_ref, e_on_route_ref        
+#             elif s_e_on_route.duplicated().sum() == 0:
+#                 print("Any of e_on_route is not the same as any of s_on_route")
+#                 print("The next step is to enumerate different transfer routes through permutation and combination, obtain all transfer stations, then find all stations between the start node/transfer stations/end node, and finally calculate the shortest path----using function '' ")
+#                 return s_on_route_ref, e_on_route_ref            
+#             else:
+#                 s_e_same_route = s_e_on_route[s_e_on_route['ref'].duplicated()]
+#                 print(f"Some of e_on_route is the same as some of s_on_route:{s_e_same_route.ref.tolist()}\n")
+#                 print("The next step is to enumerate different transfer routes through permutation and combination, obtain all transfer stations, then find all stations between the start node/transfer stations/end node, and finally calculate the shortest path----using function '' ")
+#                 return s_on_route_ref, e_on_route_ref            
+            
+#         elif length_e_on_route_ref == 1:
+#             if s_e_on_route.duplicated().sum() == 1:
+#                 print(f"One of s_on_route is the same as e_on_route:{e_on_route_ref.loc[0,'ref']}\n")
+#                 print("The next step is to find transfer stations of the rest of s_on_route and e_on_route, then find all stations between start_node, tansfer stations and end_node, finally calculate shortest path----using function ''")
+#                 return s_on_route_ref, e_on_route_ref        
+#             else:
+#                 print(f"None of s_on_route is the same as e_on_route:{e_on_route_ref.loc[0,'ref']}\n")
+#                 print("The next step is to find transfer stations of all s_on_route and e_on_route, then find all stations between start_node/tansfer stations/end_node, finally calculate shortest path----using function ''")
+#                 return s_on_route_ref, e_on_route_ref
+        
+#         else:
+#             print("There is something wrong with function----s_e_on_route_gdf")
 
 ###### version2-3
 # def judge_on_route(s_node_on_route_gdf, e_node_on_route_gdf):    
