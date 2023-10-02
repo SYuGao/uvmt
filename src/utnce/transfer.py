@@ -391,9 +391,31 @@ def btw_all_ids_pairs(btw_stations_each_way_list,sub_new_nodes):
     return btw_all_id_pairs_list
 
 
+### Drop duplicate dataframe for id_pairs of stations between s_e nodes or s_transfer nodes or transfer_e nodes
+def hash_dataframe(df):
+    return hash(tuple(df.values.ravel()))
+
+def drop_duplicate_dataframes(df_list):
+    # 使用哈希值去除重复的DataFrame
+    unique_dfs = {hash_dataframe(df): df for df in df_list}.values()
+
+    return list(unique_dfs)
+
+def drop_df_in_list(df_list):
+    unique_dfs = drop_duplicate_dataframes(df_list)
+    btw_all_id_pairs_list_unique = list(unique_dfs)
+    if len(unique_dfs) > 1:
+        # btw_all_id_pairs_list_unique = list(unique_dfs)
+        print("At least one dataframe in the list(btw_all_id_pairs_list) is different")
+        return btw_all_id_pairs_list_unique
+    else:
+        print("All dataframes in the list are the same")
+        return btw_all_id_pairs_list_unique
 
 
-    
+
+
+        
 ###### Judgement function
 ######ideas from elco-- judgement    
 # def route_decision():
