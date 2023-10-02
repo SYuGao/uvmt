@@ -193,7 +193,7 @@ def add_columns_to_edges(shortest_path_edges, edges):
     new_edges = pd.merge(edges, shortest_path_edges_df, on='geometry', how='outer')
     
     # Select and rename relevant columns in 'new_edges'
-    new_edges = new_edges[['osm_id_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x', 'count_weight', 'route_name_list', 'route', 'ref']]
+    new_edges = new_edges[['osm_id_x', 'geometry', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x', 'count_weight', 'route_name_list', 'route', 'ref']]
     new_edges = new_edges.rename(columns={'osm_id_x': 'osm_id',
                                          'railway_x': 'railway',
                                          'service_x': 'service',
@@ -376,10 +376,24 @@ def btw_stations_each_way_list(start_node,end_node,all_stations_on_matched_route
 
 
     
+### Get all id_pairs of stations between s_e nodes or s_transfer nodes or transfer_e nodes
+def btw_all_ids_pairs(btw_stations_each_way_list,sub_new_nodes):
+    btw_all_id_pairs_list = []
+    for i in range(len(btw_stations_each_way_list)):
+        s_e_between_nodes_way1 = sub_new_nodes.merge(btw_stations_each_way_list[i], on='coordinate_value', suffixes=('', '_drop'))
+        id_pairs_way1 = pd.DataFrame(columns = ['s_id','e_id'])
+
+        for i in range(len(s_e_between_nodes_way1)-1):
+            id_pairs_way1.loc[i,'s_id'] = s_e_between_nodes_way1.loc[i,'id']
+            id_pairs_way1.loc[i,'e_id'] = s_e_between_nodes_way1.loc[i+1,'id']
+        
+        btw_all_id_pairs_list.append(id_pairs_way1)    
+    return btw_all_id_pairs_list
 
 
 
 
+    
 ###### Judgement function
 ######ideas from elco-- judgement    
 # def route_decision():
