@@ -318,6 +318,12 @@ def s_e_same_routes(s_on_route_ref,e_on_route_ref):
 
         
 
+
+
+
+
+
+### Get all stations between s_e nodes or s_transfer nodes or transfer_e nodes
 def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
     node_matched_all_stations_dict = {}
 
@@ -328,26 +334,54 @@ def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
     
     return node_matched_all_stations_dict
 
+def all_stations_on_matched_routes(s_e_same_routes_df,sub_routes,start_node,end_node,sub_order_route_dict):
+    s_e_same_route_df_new = pd.merge(s_e_same_routes_df,sub_routes,on='ref',how='left')
+    
+    sub_routes_gdf = gpd.GeoDataFrame(sub_routes.copy())
+    s_e_node_gdf = gpd.GeoDataFrame(pd.concat([start_node.copy(), end_node.copy()],ignore_index=True))
+    e_node_on_route_gdf = sub_routes_gdf[sub_routes_gdf.geometry.intersects(s_e_node_gdf.iloc[1].geometry)]
+
+    s_e_same_route_gdf = pd.merge(s_e_same_route_df_new,e_node_on_route_gdf,how='inner')
+    matched_route_all_stations_dict = all_stations_on_matched_route(sub_order_route_dict, s_e_same_route_gdf)
+    all_stations_on_matched_routes_dfs= list(matched_route_all_stations_dict.values())
+    return all_stations_on_matched_routes_dfs
 
 def find_nearest_station(coordinate, nodes):
     node_tree = shapely.STRtree(nodes.geometry)
     find_nearest = node_tree.nearest(shapely.points(coordinate))
     return nodes.iloc[[find_nearest]]
 
+def between_stations_one_way(start_node,end_node,one_matched_route_df):
+    start_node_coordinate = start_node.iloc[0]['coordinate_value']
+    s_station_df1 = find_nearest_station(start_node_coordinate, one_matched_route_df)
+    s_index_df1 = s_station_df1.index[0]
 
+    end_node_coordinate = end_node.iloc[0]['coordinate_value']
+    e_station_df1 = find_nearest_station(end_node_coordinate, one_matched_route_df)
+    e_index_df1 = e_station_df1.index[0]
 
+    if s_index_df1 > e_index_df1:
+        s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1-1:-1]
+    else:
+        s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1+1:1]
+    return s_e_between_stations
 
-
-
-
-
-
+def btw_stations_each_way_list(start_node,end_node,all_stations_on_matched_routes_dfs):
+    btw_stations_each_way_list = []
+    for i in range(len(all_stations_on_matched_routes_dfs)):
+        one_matched_route_df = all_stations_on_matched_routes_dfs[i]
+        df1 = between_stations_one_way(start_node,end_node,one_matched_route_df)
+        btw_stations_each_way_list.append(df1)
+    return btw_stations_each_way_list
 
 
     
 
 
-###### ideas from elco-- judgement    
+
+
+###### Judgement function
+######ideas from elco-- judgement    
 # def route_decision():
     
 #     route_list = {51: station_df,
@@ -380,7 +414,6 @@ def find_nearest_station(coordinate, nodes):
 #     # catch the nearest metro station to start and end node on a different route
 
 #     transfer_dataframe
-
 
 
 
