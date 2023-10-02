@@ -641,18 +641,18 @@ def drop_df_in_list(df_list):
 
 
 
-def transfer_shortest_path(s_e_coordinates, new_edges, new_nodes):
+# def transfer_shortest_path(s_e_coordinates, new_edges, new_nodes):
     
-    start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
-    start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
-    start_end_nearest_id_pairs = id_pairs(start_end_points_coordinates_pairs, new_nodes)
-    start_point_id = start_end_nearest_id_pairs.iloc[0]['s_id']
-    end_point_id = start_end_nearest_id_pairs.iloc[0]['e_id']
+#     start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
+#     start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
+#     start_end_nearest_id_pairs = id_pairs(start_end_points_coordinates_pairs, new_nodes)
+#     start_point_id = start_end_nearest_id_pairs.iloc[0]['s_id']
+#     end_point_id = start_end_nearest_id_pairs.iloc[0]['e_id']
     
-    G = create_ground_graph(new_edges, new_nodes)
-    path_s_e, length_s_e, short_path_edges = shortest_path(G, start_point_id, end_point_id, new_edges, weight = "weight")
+#     G = create_ground_graph(new_edges, new_nodes)
+#     path_s_e, length_s_e, short_path_edges = shortest_path(G, start_point_id, end_point_id, new_edges, weight = "weight")
 
-    return path_s_e, length_s_e, short_path_edges,start_end_points_coordinates_pairs,start_end_nearest_id_pairs
+#     return path_s_e, length_s_e, short_path_edges,start_end_points_coordinates_pairs,start_end_nearest_id_pairs
 
 def walking_linear_distance(start_end_points_coordinates_pairs,start_end_nearest_id_pairs,new_nodes):
 
