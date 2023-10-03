@@ -302,7 +302,7 @@ def s_e_same_routes(s_on_route_ref,e_on_route_ref):
     results = s_on_route_ref['ref'].isin(e_on_route_ref['ref'].tolist())
     s_e_same_routes_df = s_on_route_ref[results]
     if len(s_e_same_routes_df) > 0:
-        print(f"s_node and e_node are on one same route:{s_e_same_routes_df}\n")
+        print(f"s_node and e_node are on same route/routes:{s_e_same_routes_df}\n")
         return s_e_same_routes_df
     else:
         print("s_node and e_node are on totally different routes\n")
