@@ -365,9 +365,11 @@ def between_stations_one_way(start_node,end_node,one_matched_route_df):
     e_index_df1 = e_station_df1.index[0]
 
     if s_index_df1 > e_index_df1:
-        s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1-1:-1]
+        # s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1-1:-1]
+        s_e_between_stations = one_matched_route_df.loc[s_index_df1:e_index_df1:-1]
     else:
-        s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1+1:1]
+        # s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1+1:1]
+        s_e_between_stations = one_matched_route_df.loc[s_index_df1:e_index_df1:1]
     return s_e_between_stations
 
 def btw_stations_each_way_list(start_node,end_node,all_stations_on_matched_routes_dfs):
