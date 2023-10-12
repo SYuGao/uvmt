@@ -160,7 +160,7 @@ def add_columns_to_nodes(order_route_dict, nodes):
 
 def all_transfer_stations_df(new_nodes):
     transfer_stations_df = new_nodes[new_nodes['ref'].str.contains(',')]
-    transfer_stations_df = transfer_stations_df.drop_duplicates(subset='name').reset_index(drop=True)
+    # transfer_stations_df = transfer_stations_df.drop_duplicates(subset='name').reset_index(drop=True)
     return transfer_stations_df
 
 # Enriches the 'edges' DataFrame with additional columns based on data from 'shortest_path_edges'
