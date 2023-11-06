@@ -681,7 +681,7 @@ def order_route(first_stop, unordered_route):
     Orders the route based on the nearest stations.
 
     Args:
-        first_stop (pandas.Series): The first stop to start the route.
+        first_stop (pandas.Series): The first stop to start the route(Destination actually).
         unordered_route (pandas.DataFrame): The unordered route containing stops.
 
     Returns:
@@ -723,6 +723,8 @@ def order_route(first_stop, unordered_route):
 
     # Concatenate the ordered stops into a DataFrame
     ordered_route = pd.concat(new_order).reset_index(drop=True)
+    # Reverse the sequence to 
+    ordered_route = ordered_route.iloc[::-1].reset_index(drop=True)
     return ordered_route
 
 
