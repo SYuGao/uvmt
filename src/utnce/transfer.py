@@ -343,7 +343,7 @@ def transfer_station_one_mode(routes_df, start_node, end_node, new_nodes, order_
     t_stations_selected['index_diff'] = abs(t_stations_selected['order_index'] - compared_index)
     min_diff_index = t_stations_selected['index_diff'].idxmin()
     t_station_node = t_stations_selected.loc[[min_diff_index]]
-    t_station_node = city_tram_new_nodes[city_tram_new_nodes['geometry'] == t_station_node.iloc[0].geometry]
+    t_station_node = new_nodes[new_nodes['geometry'] == t_station_node.iloc[0].geometry]
     return t_station_node
 
 
