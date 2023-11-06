@@ -253,7 +253,7 @@ def judge_on_route(s_on_route_ref, e_on_route_ref):   # version4
                 return s_on_route_ref, e_on_route_ref
             else:
                 print("None of e_on_route is the same as s_on_route \n")
-                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_btw'")
+                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station'")
                 return s_on_route_ref, e_on_route_ref
 
         elif length_e_on_route_ref == 1:
@@ -263,7 +263,7 @@ def judge_on_route(s_on_route_ref, e_on_route_ref):   # version4
                 return s_on_route_ref, e_on_route_ref
             else:
                 print("s_node and e_node are on two different routes \n")
-                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_btw'")
+                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station'")
                 return s_on_route_ref, e_on_route_ref
 
         else:
@@ -279,7 +279,7 @@ def judge_on_route(s_on_route_ref, e_on_route_ref):   # version4
                 return s_on_route_ref, e_on_route_ref        
             elif s_e_on_route.duplicated().sum() == 0:
                 print("Any of e_on_route is not the same as any of s_on_route \n")
-                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_btw'")
+                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station'")
                 return s_on_route_ref, e_on_route_ref            
             else:
                 s_e_same_route = s_e_on_route[s_e_on_route['ref'].duplicated()]
@@ -294,7 +294,7 @@ def judge_on_route(s_on_route_ref, e_on_route_ref):   # version4
                 return s_on_route_ref, e_on_route_ref        
             else:
                 print("None of s_on_route is the same as e_on_route \n")
-                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_btw'")
+                print("The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station'")
                 return s_on_route_ref, e_on_route_ref
         
         else:
@@ -316,8 +316,35 @@ def s_e_same_routes(s_on_route_ref,e_on_route_ref):
         return s_e_same_routes_df
 
 
-### The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_btw'
-
+### The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_one_mode'
+def transfer_station_one_mode(routes_df, start_node, end_node, new_nodes, order_route_dict):
+    
+    routes_gdf = gpd.GeoDataFrame(routes_df.copy())
+    s_node_gdf = gpd.GeoDataFrame(start_node.copy())
+    e_node_gdf = gpd.GeoDataFrame(end_node.copy())
+    s_node_on_route_gdf = routes_gdf[routes_gdf.geometry.intersects(s_node_gdf.iloc[0].geometry)]
+    e_node_on_route_gdf = routes_gdf[routes_gdf.geometry.intersects(e_node_gdf.iloc[0].geometry)]
+    
+    
+    t_station_ref_set = set([s_node_on_route_gdf.iloc[0].ref,e_node_on_route_gdf.iloc[0].ref])
+    all_nodes_ref = new_nodes.ref.to_list()
+    all_intersects_results = [set(item.split(', ')).issuperset(t_station_ref_set) for item in all_nodes_ref]
+    t_stations_gdf = new_nodes.iloc[all_intersects_results]
+    t_stations_n_c = t_stations_gdf[['name','coordinate_value']]
+    
+    all_stations_on_s_route = all_stations_on_matched_route(order_route_dict, s_node_on_route_gdf)
+    all_stations_on_s_route_df = all_stations_on_s_route[list(all_stations_on_s_route.keys())[0]]
+    all_stations_on_s_route_df['order_index'] = all_stations_on_s_route_df.index
+    
+    start_node_index_on_s_route = all_stations_on_s_route_df[all_stations_on_s_route_df['name'] == start_node.iloc[0,3]]
+    t_stations_selected = pd.merge(all_stations_on_s_route_df,t_stations_n_c,how = 'inner')
+    
+    compared_index = start_node_index_on_s_route.index.tolist()[0]
+    t_stations_selected['index_diff'] = abs(t_stations_selected['order_index'] - compared_index)
+    min_diff_index = t_stations_selected['index_diff'].idxmin()
+    t_station_node = t_stations_selected.loc[[min_diff_index]]
+    t_station_node = city_tram_new_nodes[city_tram_new_nodes['geometry'] == t_station_node.iloc[0].geometry]
+    return t_station_node
 
 
         
@@ -356,21 +383,21 @@ def find_nearest_station(coordinate, nodes):
     find_nearest = node_tree.nearest(shapely.points(coordinate))
     return nodes.iloc[[find_nearest]]
 
-def between_stations_one_way(start_node,end_node,one_matched_route_df):
+def between_stations_one_way(start_node,end_node,on_matched_route_df):
     start_node_coordinate = start_node.iloc[0]['coordinate_value']
-    s_station_df1 = find_nearest_station(start_node_coordinate, one_matched_route_df)
+    s_station_df1 = find_nearest_station(start_node_coordinate, on_matched_route_df)
     s_index_df1 = s_station_df1.index[0]
 
     end_node_coordinate = end_node.iloc[0]['coordinate_value']
-    e_station_df1 = find_nearest_station(end_node_coordinate, one_matched_route_df)
+    e_station_df1 = find_nearest_station(end_node_coordinate, on_matched_route_df)
     e_index_df1 = e_station_df1.index[0]
 
     if s_index_df1 > e_index_df1:
         # s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1-1:-1]
-        s_e_between_stations = one_matched_route_df.loc[s_index_df1:e_index_df1:-1]
+        s_e_between_stations = on_matched_route_df.loc[s_index_df1:e_index_df1:-1]
     else:
         # s_e_between_stations = one_matched_route_df.iloc[s_index_df1:e_index_df1+1:1]
-        s_e_between_stations = one_matched_route_df.loc[s_index_df1:e_index_df1:1]
+        s_e_between_stations = on_matched_route_df.loc[s_index_df1:e_index_df1:1]
     return s_e_between_stations
 
 def btw_stations_each_way_list(start_node,end_node,all_stations_on_matched_routes_dfs):
