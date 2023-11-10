@@ -214,7 +214,7 @@ def add_columns_to_edges(shortest_path_edges, edges):
     return new_edges
 
 
-
+# Get start_node and end_node stations using coordinates of start and end points
 def s_e_node_df(s_e_coordinates, new_nodes):
     start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
     start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
@@ -224,7 +224,8 @@ def s_e_node_df(s_e_coordinates, new_nodes):
     end_node = new_nodes[new_nodes['id'] == start_end_nearest_id_pairs.loc[0]['e_id']]
 
     return start_node, end_node
-
+    
+# Determine whether the start_node and end_node are on the same routes
 def s_e_on_route_ref(start_node, end_node):
     start_node_ref = start_node.ref.to_list()
     s_ref_elements = start_node_ref[0].split(', ')
@@ -300,25 +301,37 @@ def judge_on_route(s_on_route_ref, e_on_route_ref):   # version4
         else:
             print("There is something wrong with function----s_e_on_route_gdf")
 
-            
-### The next step is to find the same route----using function 's_e_same_routes'
-def s_e_same_routes(s_on_route_ref,e_on_route_ref):
-    results = s_on_route_ref['ref'].isin(e_on_route_ref['ref'].tolist())
-    s_e_same_routes_df = s_on_route_ref[results]
-    if len(s_e_same_routes_df) > 0:
-        print(f"s_node and e_node are on same route/routes:{s_e_same_routes_df}\n")
-        return s_e_same_routes_df
-    else:
-        print("s_node and e_node are on totally different routes\n")
-        # print(f"The next step is to find transfer station of {s_on_route_ref.loc[0,'ref']} and {e_on_route_ref.loc[0,'ref']}")
-        print(f"The next step is to find transfer station of s_on_route:{s_on_route_ref['ref'].tolist()} and e_on_route:{e_on_route_ref['ref'].tolist()}")
+### If the start_node and end_node are not on any same route, the next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_one_mode'
+# def transfer_station_one_mode(routes_df, start_node, end_node, new_nodes, order_route_dict):
+#     routes_gdf = gpd.GeoDataFrame(routes_df.copy())
+#     s_node_gdf = gpd.GeoDataFrame(start_node.copy())
+#     e_node_gdf = gpd.GeoDataFrame(end_node.copy())
+#     s_node_on_route_gdf = routes_gdf[routes_gdf.geometry.intersects(s_node_gdf.iloc[0].geometry)]
+#     e_node_on_route_gdf = routes_gdf[routes_gdf.geometry.intersects(e_node_gdf.iloc[0].geometry)]
     
-        return s_e_same_routes_df
+    
+#     t_station_ref_set = set([s_node_on_route_gdf.iloc[0].ref,e_node_on_route_gdf.iloc[0].ref])
+#     all_nodes_ref = new_nodes.ref.to_list()
+#     all_intersects_results = [set(item.split(', ')).issuperset(t_station_ref_set) for item in all_nodes_ref]
+#     t_stations_gdf = new_nodes.iloc[all_intersects_results]
+#     t_stations_n_c = t_stations_gdf[['name','coordinate_value']]
+    
+#     all_stations_on_s_route = all_stations_on_matched_route(order_route_dict, s_node_on_route_gdf)
+#     all_stations_on_s_route_df = all_stations_on_s_route[list(all_stations_on_s_route.keys())[0]]
+#     all_stations_on_s_route_df['order_index'] = all_stations_on_s_route_df.index
+    
+#     start_node_index_on_s_route = all_stations_on_s_route_df[all_stations_on_s_route_df['name'] == start_node.iloc[0,3]]
+#     t_stations_selected = pd.merge(all_stations_on_s_route_df,t_stations_n_c,how = 'inner')
+    
+#     compared_index = start_node_index_on_s_route.index.tolist()[0]
+#     t_stations_selected['index_diff'] = abs(t_stations_selected['order_index'] - compared_index)
+#     min_diff_index = t_stations_selected['index_diff'].idxmin()
+#     t_station_node = t_stations_selected.loc[[min_diff_index]]
+#     t_station_node = new_nodes[new_nodes['geometry'] == t_station_node.iloc[0].geometry]
+#     return t_station_node
 
 
-### The next step is to find transfer stations of e_on_route and s_on_route----using function 'transfer_station_one_mode'
 def transfer_station_one_mode(routes_df, start_node, end_node, new_nodes, order_route_dict):
-    
     routes_gdf = gpd.GeoDataFrame(routes_df.copy())
     s_node_gdf = gpd.GeoDataFrame(start_node.copy())
     e_node_gdf = gpd.GeoDataFrame(end_node.copy())
@@ -339,22 +352,34 @@ def transfer_station_one_mode(routes_df, start_node, end_node, new_nodes, order_
     start_node_index_on_s_route = all_stations_on_s_route_df[all_stations_on_s_route_df['name'] == start_node.iloc[0,3]]
     t_stations_selected = pd.merge(all_stations_on_s_route_df,t_stations_n_c,how = 'inner')
     
-    compared_index = start_node_index_on_s_route.index.tolist()[0]
-    t_stations_selected['index_diff'] = abs(t_stations_selected['order_index'] - compared_index)
-    min_diff_index = t_stations_selected['index_diff'].idxmin()
-    t_station_node = t_stations_selected.loc[[min_diff_index]]
-    t_station_node = new_nodes[new_nodes['geometry'] == t_station_node.iloc[0].geometry]
-    return t_station_node
+    if t_stations_selected.empty:
+        return print("It is impossible to travel from the starting point to the end point by only transferring once through this kind of transportation network.")
+    else:
+        compared_index = start_node_index_on_s_route.index.tolist()[0]
+        t_stations_selected['index_diff'] = abs(t_stations_selected['order_index'] - compared_index)
+        min_diff_index = t_stations_selected['index_diff'].idxmin()
+        t_station_node = t_stations_selected.loc[[min_diff_index]]
+        t_station_node = new_nodes[new_nodes['geometry'] == t_station_node.iloc[0].geometry]
+        return t_station_node
+            
+### If the start_node and end_node are on some same routes or already get the transfer station, the next step is to get the same route----using function 's_e_same_routes'
+def s_e_same_routes(s_on_route_ref,e_on_route_ref):
+    results = s_on_route_ref['ref'].isin(e_on_route_ref['ref'].tolist())
+    s_e_same_routes_df = s_on_route_ref[results]
+    if len(s_e_same_routes_df) > 0:
+        print(f"s_node and e_node are on same route/routes:{s_e_same_routes_df}\n")
+        return s_e_same_routes_df
+    else:
+        print("s_node and e_node are on totally different routes\n")
+        # print(f"The next step is to find transfer station of {s_on_route_ref.loc[0,'ref']} and {e_on_route_ref.loc[0,'ref']}")
+        print(f"The next step is to find transfer station of s_on_route:{s_on_route_ref['ref'].tolist()} and e_on_route:{e_on_route_ref['ref'].tolist()}")
+    
+        return s_e_same_routes_df
 
 
-        
 
 
-
-
-
-
-### Get all stations between s_e nodes or s_transfer nodes or transfer_e nodes
+### Get all stations between s_e nodes or s_t nodes or t_e nodes
 def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
     node_matched_all_stations_dict = {}
 
@@ -410,7 +435,7 @@ def btw_stations_each_way_list(start_node,end_node,all_stations_on_matched_route
 
 
     
-### Get all id_pairs of stations between s_e nodes or s_transfer nodes or transfer_e nodes
+### Get all id_pairs of stations between s_e nodes or s_t nodes or t_e nodes
 def btw_all_ids_pairs(btw_stations_each_way_list,sub_new_nodes):
     btw_all_id_pairs_list = []
     for i in range(len(btw_stations_each_way_list)):
@@ -425,7 +450,7 @@ def btw_all_ids_pairs(btw_stations_each_way_list,sub_new_nodes):
     return btw_all_id_pairs_list
 
 
-### Drop duplicate dataframe for id_pairs of stations between s_e nodes or s_transfer nodes or transfer_e nodes
+### Drop duplicate dataframe for id_pairs of stations between s_e nodes or s_t nodes or t_e nodes
 def hash_dataframe(df):
     return hash(tuple(df.values.ravel()))
 
