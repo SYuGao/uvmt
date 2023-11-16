@@ -317,6 +317,11 @@ def prepare_bus(osm_path):
     # Expand the edges for more detailed information
     edges = expand_edges(edges)
 
+    # Unify the columns' name and order with other edges dataframe of subway and tram
+    edges.rename(columns={'highway': 'service'}, inplace=True)
+    edges['railway'] = 'bus'
+    new_column_order = ['osm_id', 'geometry', 'railway', 'service', 'id', 'from_id', 'to_id', 'distance', 'time', 'weights', 'to_from', 'from_to']
+    
     # Retrieve bus routes from OpenStreetMap data
     city_bus_routes = bus_routes(osm_path)
 
