@@ -154,8 +154,24 @@ def add_columns_to_nodes(order_route_dict, nodes):
     
     # Apply the 'fill_transfer' function to populate 'transfer' column
     new_nodes['transfer'] = new_nodes.apply(fill_transfer, axis=1)
+
+    # # create a exactly same dataframe with new_nodes but name columns by different transportation routes
+    # rename_cols = {
+    # "geometry": "geometry"+"_"+new_nodes.loc[0,'route'],
+    # "degree": "degree"+"_"+new_nodes.loc[0,'route'],
+    # "id": "id"+"_"+new_nodes.loc[0,'route'],
+    # "name": "name"+"_"+new_nodes.loc[0,'route'],
+    # "geo_x": "geo_x"+"_"+new_nodes.loc[0,'route'],
+    # "geo_y": "geo_y"+"_"+new_nodes.loc[0,'route'],
+    # "coordinate_value": "coordinate_value"+"_"+new_nodes.loc[0,'route'],
+    # "route_name_list": "route_name_list"+"_"+new_nodes.loc[0,'route'],
+    # "route": "route"+"_"+new_nodes.loc[0,'route'],
+    # "ref": "ref"+"_"+new_nodes.loc[0,'route'],
+    # "transfer": "transfer"+"_"+new_nodes.loc[0,'route']
+    # }
+    # new_nodes_ftn = new_nodes.rename(columns=rename_cols)
     
-    # Return the modified 'new_nodes' GeoDataFrame
+    # Return the modified 'new_nodes','new_nodes_ftn' GeoDataFrame
     return new_nodes
 
 def all_transfer_stations_df(new_nodes):
