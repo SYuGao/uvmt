@@ -251,14 +251,51 @@ def add_columns_to_edges(shortest_path_edges, edges):
 
 # Get start_node and end_node stations using coordinates of start and end points
 def s_e_node_df(s_e_coordinates, new_nodes):
+    """
+    Get start_node and end_node stations in a DataFrame using coordinates of start and end points.
+
+    Parameters:
+    - s_e_coordinates (dict): Dictionary containing 'start' and 'end' coordinates.
+    - new_nodes (pandas.DataFrame): Input DataFrame containing nodes information.
+
+    Returns:
+    Tuple[pandas.DataFrame, pandas.DataFrame]: A tuple containing DataFrames for the start and end nodes.
+
+    Example:
+    >>> import pandas as pd
+    >>> coordinates = {'start': {'lat': 40.123, 'lon': -74.567}, 'end': {'lat': 41.789, 'lon': -73.456}}
+    >>> data = {'id': [1, 2, 3], 'name': ['Node A', 'Node B', 'Node C'], 'lat': [40.0, 41.0, 42.0], 'lon': [-75.0, -74.5, -73.0]}
+    >>> nodes_df = pd.DataFrame(data)
+    >>> start_node, end_node = s_e_node_df(coordinates, nodes_df)
+    >>> start_node
+       id     name   lat   lon
+    0   1  Node A  40.0 -75.0
+    >>> end_node
+       id     name   lat   lon
+    2   3  Node C  42.0 -73.0
+    """
+    # Create DataFrame from start and end coordinates
     start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
     start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
 
+    # Find nearest node IDs for start and end points
     start_end_nearest_id_pairs = id_pairs(start_end_points_coordinates_pairs, new_nodes)
+
+    # Retrieve start and end nodes based on their IDs
     start_node = new_nodes[new_nodes['id'] == start_end_nearest_id_pairs.loc[0]['s_id']]
     end_node = new_nodes[new_nodes['id'] == start_end_nearest_id_pairs.loc[0]['e_id']]
 
     return start_node, end_node
+    
+# def s_e_node_df(s_e_coordinates, new_nodes):
+#     start_end_points_coordinates_pairs = pd.DataFrame([s_e_coordinates])
+#     start_end_points_coordinates_pairs = s_e_coordinates_pairs(start_end_points_coordinates_pairs)
+
+#     start_end_nearest_id_pairs = id_pairs(start_end_points_coordinates_pairs, new_nodes)
+#     start_node = new_nodes[new_nodes['id'] == start_end_nearest_id_pairs.loc[0]['s_id']]
+#     end_node = new_nodes[new_nodes['id'] == start_end_nearest_id_pairs.loc[0]['e_id']]
+
+#     return start_node, end_node
     
 # Determine whether the start_node and end_node are on the same routes
 def s_e_on_route_ref(start_node, end_node):
