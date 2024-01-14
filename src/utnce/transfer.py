@@ -175,10 +175,29 @@ def add_columns_to_nodes(order_route_dict, nodes):
     return new_nodes
 
 def all_transfer_stations_df(new_nodes):
-    transfer_stations_df = new_nodes[new_nodes['ref'].str.contains(',')]
-    # transfer_stations_df = transfer_stations_df.drop_duplicates(subset='name').reset_index(drop=True)
-    return transfer_stations_df
+    """
+    Extracts transfer stations from a DataFrame of nodes based on the 'ref' column.
 
+    Parameters:
+    - new_nodes (pandas.DataFrame): Input DataFrame containing nodes information.
+
+    Returns:
+    pandas.DataFrame: DataFrame containing transfer stations based on the 'ref' column.
+
+    Example:
+    >>> import pandas as pd
+    >>> data = {'id': [1, 2, 3], 'name': ['Station A', 'Station B', 'Station C'], 'ref': ['A,B', 'C', 'D,E']}
+    >>> nodes_df = pd.DataFrame(data)
+    >>> all_transfer_stations_df(nodes_df)
+       id       name  ref
+    0   1  Station A  A,B
+    2   3  Station C  D,E
+    """
+    # Filter rows where 'ref' column contains a comma (',') indicating transfer stations
+    transfer_stations_df = new_nodes[new_nodes['ref'].str.contains(',')]
+
+    return transfer_stations_df
+    
 # Enriches the 'edges' DataFrame with additional columns based on data from 'shortest_path_edges'
 def add_columns_to_edges(shortest_path_edges, edges):
     """
