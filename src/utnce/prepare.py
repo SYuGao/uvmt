@@ -253,6 +253,9 @@ def sub_stations(osm_path):
     # Adding new columns 'geo_x' and 'geo_y' to store the x and y coordinates of the stations' geometry
     sub_stations['geo_x'] = sub_stations.geometry.x
     sub_stations['geo_y'] = sub_stations.geometry.y
+
+    #drop duplicate stations based on geometry
+    sub_stations = sub_stations.drop_duplicates(subset='geometry')
     
     # Returning the DataFrame of subway stations
     return sub_stations
@@ -285,6 +288,9 @@ def tram_stations(osm_path):
     tram_stations['geo_x'] = tram_stations.geometry.x
     tram_stations['geo_y'] = tram_stations.geometry.y
 
+    #drop duplicate stations based on geometry
+    tram_stations = tram_stations.drop_duplicates(subset='geometry')
+    
     return tram_stations
 
 def bus_stations(osm_path):
@@ -314,6 +320,9 @@ def bus_stations(osm_path):
     bus_stations['geo_x'] = bus_stations['geometry'].x
     bus_stations['geo_y'] = bus_stations['geometry'].y
 
+    #drop duplicate stations based on geometry
+    bus_stations = bus_stations.drop_duplicates(subset='geometry')
+    
     return bus_stations
 
     
