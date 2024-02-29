@@ -38,8 +38,8 @@ def prepare_metro(osm_path):
     # Expand the edges if required
     edges = expand_edges(edges)
 
-    # Retrieve sub-stations again (optional, as it was already obtained before)
-    city_sub_stations = sub_stations(osm_path)
+    # # Retrieve sub-stations again (optional, as it was already obtained before)
+    # city_sub_stations = sub_stations(osm_path)
 
     # Obtain sub-routes in the city
     city_sub_routes = sub_routes(osm_path)
