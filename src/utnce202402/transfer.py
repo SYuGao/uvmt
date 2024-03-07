@@ -548,7 +548,13 @@ def s_e_same_routes(s_on_route_ref, e_on_route_ref):
         # Return None when there are no common routes
         return None
 
-        
+def s_e_same_route_gdf_metro(s_e_same_routes_df,city_sub_routes,start_node):
+    s_e_on_possible_route_df = pd.merge(s_e_same_routes_df, city_sub_routes, on='ref', how='left')
+    s_e_on_route_possible_gdf = gpd.GeoDataFrame(s_e_on_possible_route_df.copy())
+    start_node_gdf = gpd.GeoDataFrame(start_node.copy())
+    s_e_on_same_route_gdf = s_e_on_route_possible_gdf[s_e_on_route_possible_gdf.geometry.buffer(0.000001).intersects(start_node_gdf.iloc[0]['geometry'])]
+    s_e_on_same_route_gdf = s_e_on_same_route_gdf.reset_index(drop = True)
+    return start_node_gdf,s_e_on_same_route_gdf    
 
 ### Get all stations between s_e nodes or s_t nodes or t_e nodes
 def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
@@ -621,6 +627,20 @@ def all_stations_on_matched_routes(s_e_same_routes_df, sub_routes, start_node, e
     all_stations_on_matched_routes_dfs = list(matched_route_all_stations_dict.values())
 
     return all_stations_on_matched_routes_dfs
+
+def all_btw_stations_on_same_route_gdf_metro(merged_order_route_dict, s_e_on_same_route_gdf, start_node,end_node):
+    all_stations_on_same_route = merged_order_route_dict[s_e_on_same_route_gdf.name[0]]
+   
+    all_stations_on_same_route_gdf = gpd.GeoDataFrame(all_stations_on_same_route.copy())
+    
+    start_node_gdf = gpd.GeoDataFrame(start_node.copy())
+    end_node_gdf = gpd.GeoDataFrame(end_node.copy())
+
+    start_station_index = shapely.distance(start_node_gdf.geometry.values,all_stations_on_same_route_gdf.geometry.values).argmin()
+    end_station_index = shapely.distance(end_node_gdf.geometry.values,all_stations_on_same_route_gdf.geometry.values).argmin()
+    all_btw_stations_on_same_route_gdf = all_stations_on_same_route_gdf.iloc[start_station_index:end_station_index+1]
+
+    return all_btw_stations_on_same_route_gdf
 
 def find_nearest_station(coordinate, nodes):
     """
@@ -760,7 +780,28 @@ def btw_all_ids_pairs(btw_stations_each_way_list, sub_new_nodes):
 
     return btw_all_id_pairs_list
 
+def btw_all_ids_pairs_transfer_all(all_btw_stations_on_same_route_gdf, three_networks_nodes_transfer_all):
+    s_e_between_nodes = three_networks_nodes_transfer_all.merge(all_btw_stations_on_same_route_gdf, on = 'coordinate_value', suffixes=('', '_drop'))
+
+    btw_all_id_pairs_list = []
+    s_e_btw_nodes_transfer_all = three_networks_nodes_transfer_all.merge(all_btw_stations_on_same_route_gdf, on = 'coordinate_value', suffixes=('', '_drop'))
+
    
+
+    id_pairs_way1 = pd.DataFrame(columns=['s_id', 'e_id'])
+
+  
+    for i in range(len(s_e_btw_nodes_transfer_all)-1):
+           
+        id_pairs_way1.loc[i, 's_id'] = s_e_btw_nodes_transfer_all.loc[i, 'id']
+        id_pairs_way1.loc[i, 'e_id'] = s_e_btw_nodes_transfer_all.loc[i+1, 'id']
+        
+
+    btw_all_id_pairs_list.append(id_pairs_way1)
+
+    return btw_all_id_pairs_list
+
+    
 ### Drop duplicate dataframe for id_pairs of stations between s_e nodes or s_t nodes or t_e nodes. The result explains if there are more than one way to travel between s_e nodes or s_t nodes or t_e nodes
 # Generate a hash value for a DataFrame based on its values
 def hash_dataframe(df):
