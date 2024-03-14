@@ -554,7 +554,7 @@ def s_e_same_route_gdf_metro(s_e_same_routes_df,city_sub_routes,start_node):
     start_node_gdf = gpd.GeoDataFrame(start_node.copy())
     s_e_on_same_route_gdf = s_e_on_route_possible_gdf[s_e_on_route_possible_gdf.geometry.buffer(0.000001).intersects(start_node_gdf.iloc[0]['geometry'])]
     s_e_on_same_route_gdf = s_e_on_same_route_gdf.reset_index(drop = True)
-    return start_node_gdf,s_e_on_same_route_gdf    
+    return s_e_on_same_route_gdf   
 
 ### Get all stations between s_e nodes or s_t nodes or t_e nodes
 def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
