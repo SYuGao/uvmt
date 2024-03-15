@@ -642,6 +642,37 @@ def all_btw_stations_on_same_route_gdf_metro(merged_order_route_dict, s_e_on_sam
 
     return all_btw_stations_on_same_route_gdf
 
+
+def all_stations_on_same_route_gdf_transfer(t_e_same_routes_df, city_sub_routes, city_sub_order_route_dict, t_station_node, end_node):
+    t_e_on_possible_route_df = pd.merge(t_e_same_routes_df, city_sub_routes, on='ref', how='left')
+    t_e_on_route_possible_gdf = gpd.GeoDataFrame(t_e_on_possible_route_df.copy())
+    
+    all_btw_stations_on_same_route_gdf_t_e = None  
+    
+    for i in range(len(t_e_on_route_possible_gdf)):
+        all_stations_on_possible_route_t_e = city_sub_order_route_dict[t_e_on_route_possible_gdf.name[i]]
+    
+        all_stations_on_possible_route_t_e_gdf = gpd.GeoDataFrame(all_stations_on_possible_route_t_e.copy())
+    
+        t_station_node_gdf = gpd.GeoDataFrame(t_station_node.copy())
+        end_node_gdf = gpd.GeoDataFrame(end_node.copy())
+
+        t_station_node_index = shapely.distance(t_station_node_gdf.geometry.values, all_stations_on_possible_route_t_e_gdf.geometry.values).argmin()
+        end_station_index = shapely.distance(end_node_gdf.geometry.values, all_stations_on_possible_route_t_e_gdf.geometry.values).argmin()
+    
+        if t_station_node_index > end_station_index:
+            continue  
+        else:
+            all_btw_stations_on_same_route_gdf_t_e = all_stations_on_possible_route_t_e_gdf.iloc[t_station_node_index:end_station_index+1]
+            break
+    
+    if all_btw_stations_on_same_route_gdf_t_e is None:
+
+        raise ValueError("No suitable stations found.")
+    
+    return all_btw_stations_on_same_route_gdf_t_e
+
+
 def find_nearest_station(coordinate, nodes):
     """
     Find the nearest station to a given coordinate.
