@@ -548,14 +548,56 @@ def s_e_same_routes(s_on_route_ref, e_on_route_ref):
         # Return None when there are no common routes
         return None
 
-def s_e_same_route_gdf_metro(s_e_same_routes_df,city_sub_routes,start_node):
+# def s_e_same_route_gdf_metro(s_e_same_routes_df,city_sub_routes,start_node):
+#     s_e_on_possible_route_df = pd.merge(s_e_same_routes_df, city_sub_routes, on='ref', how='left')
+#     s_e_on_route_possible_gdf = gpd.GeoDataFrame(s_e_on_possible_route_df.copy())
+#     start_node_gdf = gpd.GeoDataFrame(start_node.copy())
+#     s_e_on_same_route_gdf = s_e_on_route_possible_gdf[s_e_on_route_possible_gdf.geometry.buffer(0.000001).intersects(start_node_gdf.iloc[0]['geometry'])]
+#     s_e_on_same_route_gdf = s_e_on_same_route_gdf.reset_index(drop = True)
+#     return s_e_on_same_route_gdf   
+
+def s_e_same_route_gdf_metro(s_e_same_routes_df, city_sub_routes, start_node):
+    """
+    Finds edges with the same route as the start node and returns them as a GeoDataFrame.
+
+    Parameters:
+    -----------
+    s_e_same_routes_df : pandas.DataFrame
+        DataFrame containing information about edges with the same route as start node.
+    city_sub_routes : pandas.DataFrame
+        DataFrame containing information about city subway routes.
+    start_node : pandas.DataFrame
+        DataFrame containing information about the start node.
+
+    Returns:
+    --------
+    gpd.GeoDataFrame
+        GeoDataFrame containing edges with the same route as the start node.
+
+    Example:
+    --------
+    # Define input dataframes
+    s_e_same_routes_df = pd.DataFrame(...)
+    city_sub_routes = pd.DataFrame(...)
+    start_node = pd.DataFrame(...)
+
+    # Call the function
+    result_gdf = s_e_same_route_gdf_metro(s_e_same_routes_df, city_sub_routes, start_node)
+    """
+    # Merge start node edges with city sub routes
     s_e_on_possible_route_df = pd.merge(s_e_same_routes_df, city_sub_routes, on='ref', how='left')
     s_e_on_route_possible_gdf = gpd.GeoDataFrame(s_e_on_possible_route_df.copy())
+    
+    # Convert start node to GeoDataFrame
     start_node_gdf = gpd.GeoDataFrame(start_node.copy())
+    
+    # Find edges with the same route as the start node
     s_e_on_same_route_gdf = s_e_on_route_possible_gdf[s_e_on_route_possible_gdf.geometry.buffer(0.000001).intersects(start_node_gdf.iloc[0]['geometry'])]
-    s_e_on_same_route_gdf = s_e_on_same_route_gdf.reset_index(drop = True)
-    return s_e_on_same_route_gdf   
+    s_e_on_same_route_gdf = s_e_on_same_route_gdf.reset_index(drop=True)
+    
+    return s_e_on_same_route_gdf
 
+    
 ### Get all stations between s_e nodes or s_t nodes or t_e nodes
 def all_stations_on_matched_route(order_route_dict, node_on_route_gdf):
     """
@@ -628,49 +670,175 @@ def all_stations_on_matched_routes(s_e_same_routes_df, sub_routes, start_node, e
 
     return all_stations_on_matched_routes_dfs
 
-def all_btw_stations_on_same_route_gdf_metro(merged_order_route_dict, s_e_on_same_route_gdf, start_node,end_node):
-    all_stations_on_same_route = merged_order_route_dict[s_e_on_same_route_gdf.name[0]]
+    
+# def all_btw_stations_on_same_route_gdf_metro(merged_order_route_dict, s_e_on_same_route_gdf, start_node,end_node):
+#     all_stations_on_same_route = merged_order_route_dict[s_e_on_same_route_gdf.name[0]]
    
+#     all_stations_on_same_route_gdf = gpd.GeoDataFrame(all_stations_on_same_route.copy())
+    
+#     start_node_gdf = gpd.GeoDataFrame(start_node.copy())
+#     end_node_gdf = gpd.GeoDataFrame(end_node.copy())
+
+#     start_station_index = shapely.distance(start_node_gdf.geometry.values,all_stations_on_same_route_gdf.geometry.values).argmin()
+#     end_station_index = shapely.distance(end_node_gdf.geometry.values,all_stations_on_same_route_gdf.geometry.values).argmin()
+#     all_btw_stations_on_same_route_gdf = all_stations_on_same_route_gdf.iloc[start_station_index:end_station_index+1]
+
+#     return all_btw_stations_on_same_route_gdf
+
+def all_btw_stations_on_same_route_gdf_metro(merged_order_route_dict, s_e_on_same_route_gdf, start_node, end_node):
+    """
+    Finds all stations between the start and end nodes on the same route and returns them as a GeoDataFrame.
+
+    Parameters:
+    -----------
+    merged_order_route_dict : dict
+        Dictionary mapping route names to lists of stations in order.
+    s_e_on_same_route_gdf : gpd.GeoDataFrame
+        GeoDataFrame containing edges with the same route as the start node.
+    start_node : pandas.DataFrame
+        DataFrame containing information about the start node.
+    end_node : pandas.DataFrame
+        DataFrame containing information about the end node.
+
+    Returns:
+    --------
+    gpd.GeoDataFrame
+        GeoDataFrame containing all stations between the start and end nodes on the same route.
+
+    Example:
+    --------
+    # Define input data
+    merged_order_route_dict = {...}
+    s_e_on_same_route_gdf = gpd.GeoDataFrame(...)
+    start_node = pd.DataFrame(...)
+    end_node = pd.DataFrame(...)
+
+    # Call the function
+    result_gdf = all_btw_stations_on_same_route_gdf_metro(merged_order_route_dict, s_e_on_same_route_gdf, start_node, end_node)
+    """
+    # Get all stations on the same route as the start node
+    all_stations_on_same_route = merged_order_route_dict[s_e_on_same_route_gdf.name[0]]
     all_stations_on_same_route_gdf = gpd.GeoDataFrame(all_stations_on_same_route.copy())
     
+    # Convert start and end nodes to GeoDataFrames
     start_node_gdf = gpd.GeoDataFrame(start_node.copy())
     end_node_gdf = gpd.GeoDataFrame(end_node.copy())
 
-    start_station_index = shapely.distance(start_node_gdf.geometry.values,all_stations_on_same_route_gdf.geometry.values).argmin()
-    end_station_index = shapely.distance(end_node_gdf.geometry.values,all_stations_on_same_route_gdf.geometry.values).argmin()
+    # Find the index of the nearest station to the start node
+    start_station_index = shapely.distance(start_node_gdf.geometry.values, all_stations_on_same_route_gdf.geometry.values).argmin()
+    # Find the index of the nearest station to the end node
+    end_station_index = shapely.distance(end_node_gdf.geometry.values, all_stations_on_same_route_gdf.geometry.values).argmin()
+    
+    # Extract stations between the start and end nodes on the same route
     all_btw_stations_on_same_route_gdf = all_stations_on_same_route_gdf.iloc[start_station_index:end_station_index+1]
 
-    return all_btw_stations_on_same_route_gdf
+    return all_btw_stations_on_same_route_gdf    
+
+
+# def all_stations_on_same_route_gdf_transfer(t_e_same_routes_df, city_sub_routes, city_sub_order_route_dict, t_station_node, end_node):
+#     t_e_on_possible_route_df = pd.merge(t_e_same_routes_df, city_sub_routes, on='ref', how='left')
+#     t_e_on_route_possible_gdf = gpd.GeoDataFrame(t_e_on_possible_route_df.copy())
+    
+#     all_btw_stations_on_same_route_gdf_t_e = None  
+    
+#     for i in range(len(t_e_on_route_possible_gdf)):
+#         all_stations_on_possible_route_t_e = city_sub_order_route_dict[t_e_on_route_possible_gdf.name[i]]
+    
+#         all_stations_on_possible_route_t_e_gdf = gpd.GeoDataFrame(all_stations_on_possible_route_t_e.copy())
+    
+#         t_station_node_gdf = gpd.GeoDataFrame(t_station_node.copy())
+#         end_node_gdf = gpd.GeoDataFrame(end_node.copy())
+
+#         t_station_node_index = shapely.distance(t_station_node_gdf.geometry.values, all_stations_on_possible_route_t_e_gdf.geometry.values).argmin()
+#         end_station_index = shapely.distance(end_node_gdf.geometry.values, all_stations_on_possible_route_t_e_gdf.geometry.values).argmin()
+    
+#         if t_station_node_index > end_station_index:
+#             continue  
+#         else:
+#             all_btw_stations_on_same_route_gdf_t_e = all_stations_on_possible_route_t_e_gdf.iloc[t_station_node_index:end_station_index+1]
+#             break
+    
+#     if all_btw_stations_on_same_route_gdf_t_e is None:
+
+#         raise ValueError("No suitable stations found.")
+    
+#     return all_btw_stations_on_same_route_gdf_t_e
 
 
 def all_stations_on_same_route_gdf_transfer(t_e_same_routes_df, city_sub_routes, city_sub_order_route_dict, t_station_node, end_node):
+    """
+    Finds all stations between a transfer station and an end node on the same route and returns them as a GeoDataFrame.
+
+    Parameters:
+    -----------
+    t_e_same_routes_df : pandas.DataFrame
+        DataFrame containing information about edges with the same route as transfer station.
+    city_sub_routes : pandas.DataFrame
+        DataFrame containing information about city subway routes.
+    city_sub_order_route_dict : dict
+        Dictionary mapping route names to lists of stations in order.
+    t_station_node : pandas.DataFrame
+        DataFrame containing information about transfer station node.
+    end_node : pandas.DataFrame
+        DataFrame containing information about the end node.
+
+    Returns:
+    --------
+    gpd.GeoDataFrame
+        GeoDataFrame containing all stations between the transfer station and end node on the same route.
+
+    Raises:
+    -------
+    ValueError
+        If no suitable stations are found between the transfer station and the end node.
+
+    Example:
+    --------
+    # Define input dataframes
+    t_e_same_routes_df = pd.DataFrame(...)
+    city_sub_routes = pd.DataFrame(...)
+    city_sub_order_route_dict = {...}
+    t_station_node = pd.DataFrame(...)
+    end_node = pd.DataFrame(...)
+
+    # Call the function
+    result_gdf = all_stations_on_same_route_gdf_transfer(t_e_same_routes_df, city_sub_routes, city_sub_order_route_dict, t_station_node, end_node)
+    """
+    # Merge transfer station edges with city sub routes
     t_e_on_possible_route_df = pd.merge(t_e_same_routes_df, city_sub_routes, on='ref', how='left')
     t_e_on_route_possible_gdf = gpd.GeoDataFrame(t_e_on_possible_route_df.copy())
     
     all_btw_stations_on_same_route_gdf_t_e = None  
     
+    # Iterate over each edge on possible route
     for i in range(len(t_e_on_route_possible_gdf)):
+        # Get all stations on the possible route
         all_stations_on_possible_route_t_e = city_sub_order_route_dict[t_e_on_route_possible_gdf.name[i]]
-    
         all_stations_on_possible_route_t_e_gdf = gpd.GeoDataFrame(all_stations_on_possible_route_t_e.copy())
     
+        # Convert transfer station node and end node to GeoDataFrames
         t_station_node_gdf = gpd.GeoDataFrame(t_station_node.copy())
         end_node_gdf = gpd.GeoDataFrame(end_node.copy())
 
+        # Find the nearest station index to the transfer station node
         t_station_node_index = shapely.distance(t_station_node_gdf.geometry.values, all_stations_on_possible_route_t_e_gdf.geometry.values).argmin()
+        # Find the nearest station index to the end node
         end_station_index = shapely.distance(end_node_gdf.geometry.values, all_stations_on_possible_route_t_e_gdf.geometry.values).argmin()
     
+        # If transfer station index is greater than end station index, continue to next iteration
         if t_station_node_index > end_station_index:
             continue  
         else:
+            # Extract stations between transfer station and end node on the same route
             all_btw_stations_on_same_route_gdf_t_e = all_stations_on_possible_route_t_e_gdf.iloc[t_station_node_index:end_station_index+1]
             break
     
+    # If no suitable stations found, raise ValueError
     if all_btw_stations_on_same_route_gdf_t_e is None:
-
         raise ValueError("No suitable stations found.")
     
     return all_btw_stations_on_same_route_gdf_t_e
+
 
 
 def find_nearest_station(coordinate, nodes):
@@ -907,6 +1075,163 @@ def drop_df_in_list(df_list):
     
 
      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+def test_OD_metro_new(OD_df,city_sub_new_nodes,city_sub_new_edges,city_sub_routes,city_sub_order_route_dict):
+    
+    for index, row in OD_df.iterrows():
+        OD_pair = pd.Series(row)
+        start_node, end_node = s_e_node_df(OD_pair, city_sub_new_nodes)
+       
+        s_on_route_ref,e_on_route_ref = s_e_on_route_ref(start_node, end_node)
+        s_on_route_ref, e_on_route_ref = judge_on_route(s_on_route_ref, e_on_route_ref)
+        s_e_same_routes_df = s_e_same_routes(s_on_route_ref,e_on_route_ref)
+        if s_e_same_routes_df is None:
+            t_station_node = transfer_station_one_mode(city_sub_routes, start_node, end_node, city_sub_new_nodes, city_sub_order_route_dict)
+            
+            s_on_route_ref,t_on_route_ref = s_e_on_route_ref(start_node, t_station_node)
+            s_t_same_routes_df = s_e_same_routes(s_on_route_ref,t_on_route_ref)
+            all_btw_stations_on_same_route_gdf_s_t = all_stations_on_same_route_gdf_transfer(s_t_same_routes_df,city_sub_routes,city_sub_order_route_dict,start_node,t_station_node)
+            btw_all_id_pairs_list_s_t = btw_all_ids_pairs_transfer_all(all_btw_stations_on_same_route_gdf_s_t,city_sub_new_nodes)
+            
+            t_on_route_ref,e_on_route_ref = s_e_on_route_ref( t_station_node,end_node)
+            t_e_same_routes_df = s_e_same_routes(t_on_route_ref,e_on_route_ref)
+            all_btw_stations_on_same_route_gdf_t_e = all_stations_on_same_route_gdf_transfer(t_e_same_routes_df,city_sub_routes,city_sub_order_route_dict,t_station_node,end_node)
+            btw_all_id_pairs_list_t_e = btw_all_ids_pairs_transfer_all(all_btw_stations_on_same_route_gdf_t_e,city_sub_new_nodes)
+
+
+        
+            btw_all_id_pairs_list_unique_s_t = drop_df_in_list(btw_all_id_pairs_list_s_t)
+            btw_all_id_pairs_list_unique_t_e = drop_df_in_list(btw_all_id_pairs_list_t_e)
+
+            G = create_ground_graph(city_sub_new_edges, city_sub_new_nodes)
+            shortest_path_pairs_way_s_t = all_shortest_paths(G, btw_all_id_pairs_list_unique_s_t[0], city_sub_new_edges)
+            duplicate_row_count_way_s_t, shortest_path_edges_way_s_t, edges_way_s_t = edges_with_count_weight(shortest_path_pairs_way_s_t, city_sub_new_edges)
+            shortest_path_pairs_way_t_e = all_shortest_paths(G, btw_all_id_pairs_list_unique_t_e[0], city_sub_new_edges)
+            duplicate_row_count_way_t_e, shortest_path_edges_way_t_e, edges_way_t_e = edges_with_count_weight(shortest_path_pairs_way_t_e, city_sub_new_edges)
+            shortest_path_edges_way = pd.concat([shortest_path_edges_way_s_t,shortest_path_edges_way_t_e])
+        
+
+            fig, ax = plt.subplots(1, 1, figsize=(30, 20))
+            gpd.GeoDataFrame(city_sub_new_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
+            gpd.GeoDataFrame(shortest_path_edges_way.copy()).plot(ax=ax, zorder=1, linewidth=(shortest_path_edges_way.count_weight), color='orange')
+            print(index)
+                
+        else:
+            all_btw_stations_on_same_route_gdf_s_e = all_stations_on_same_route_gdf_transfer(s_e_same_routes_df,city_sub_routes,city_sub_order_route_dict,start_node,end_node)
+
+            btw_all_id_pairs_list = btw_all_ids_pairs_transfer_all(all_btw_stations_on_same_route_gdf_s_e,city_sub_new_nodes)
+            btw_all_id_pairs_list_unique = drop_df_in_list(btw_all_id_pairs_list)
+            G = create_ground_graph(city_sub_new_edges, city_sub_new_nodes)
+            shortest_path_pairs_way = all_shortest_paths(G, btw_all_id_pairs_list_unique[0], city_sub_new_edges)
+            duplicate_row_count_way, shortest_path_edges_way, edges_way = edges_with_count_weight(shortest_path_pairs_way, city_sub_new_nodes)
+            fig, ax = plt.subplots(1, 1, figsize=(30, 20))
+            gpd.GeoDataFrame(city_sub_new_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
+            gpd.GeoDataFrame(shortest_path_edges_way.copy()).plot(ax=ax, zorder=1, linewidth=(shortest_path_edges_way.count_weight), color='orange')
+            print(index)
+
+
+# revise test_OD_metro_new to return a dictionary where the keys are the indices and the values are the shortest_path_edges_way dataframes
+def test_OD_metro_new_dict(OD_df, city_sub_new_nodes, city_sub_new_edges, city_sub_routes, city_sub_order_route_dict):
+    """
+    Calculate shortest paths between origin-destination pairs in OD_df considering metro routes.
+
+    Parameters:
+        OD_df (pandas.DataFrame): DataFrame containing origin-destination pairs.
+        city_sub_new_nodes (pandas.DataFrame): DataFrame containing node information.
+        city_sub_new_edges (pandas.DataFrame): DataFrame containing edge information.
+        city_sub_routes (pandas.DataFrame): DataFrame containing metro routes.
+        city_sub_order_route_dict (dict): Dictionary mapping route orders to routes.
+
+    Returns:
+        dict: A dictionary where keys are the indices and values are the shortest_path_edges_way dataframes.
+    """
+
+    # Initialize an empty dictionary to store results
+    OD_edges_result_dict = {}
+
+    for index, row in OD_df.iterrows():
+        # Get origin-destination pair
+        OD_pair = pd.Series(row)
+        start_node, end_node = s_e_node_df(OD_pair, city_sub_new_nodes)
+
+        # Check if start and end nodes are on the same route
+        s_on_route_ref, e_on_route_ref = s_e_on_route_ref(start_node, end_node)
+        s_on_route_ref, e_on_route_ref = judge_on_route(s_on_route_ref, e_on_route_ref)
+        s_e_same_routes_df = s_e_same_routes(s_on_route_ref, e_on_route_ref)
+
+        if s_e_same_routes_df is None:
+            # If not on the same route, find shortest path via transfer station
+            t_station_node = transfer_station_one_mode(city_sub_routes, start_node, end_node, city_sub_new_nodes, city_sub_order_route_dict)
+
+            # Find shortest paths from start to transfer station and transfer station to end
+            s_on_route_ref, t_on_route_ref = s_e_on_route_ref(start_node, t_station_node)
+            s_t_same_routes_df = s_e_same_routes(s_on_route_ref, t_on_route_ref)
+            all_btw_stations_on_same_route_gdf_s_t = all_stations_on_same_route_gdf_transfer(s_t_same_routes_df, city_sub_routes, city_sub_order_route_dict, start_node, t_station_node)
+            btw_all_id_pairs_list_s_t = btw_all_ids_pairs_transfer_all(all_btw_stations_on_same_route_gdf_s_t, city_sub_new_nodes)
+
+            t_on_route_ref, e_on_route_ref = s_e_on_route_ref(t_station_node, end_node)
+            t_e_same_routes_df = s_e_same_routes(t_on_route_ref, e_on_route_ref)
+            all_btw_stations_on_same_route_gdf_t_e = all_stations_on_same_route_gdf_transfer(t_e_same_routes_df, city_sub_routes, city_sub_order_route_dict, t_station_node, end_node)
+            btw_all_id_pairs_list_t_e = btw_all_ids_pairs_transfer_all(all_btw_stations_on_same_route_gdf_t_e, city_sub_new_nodes)
+
+            # Combine unique pairs of start-transfer and transfer-end stations
+            btw_all_id_pairs_list_unique_s_t = drop_df_in_list(btw_all_id_pairs_list_s_t)
+            btw_all_id_pairs_list_unique_t_e = drop_df_in_list(btw_all_id_pairs_list_t_e)
+
+            # Create ground graph
+            G = create_ground_graph(city_sub_new_edges, city_sub_new_nodes)
+
+            # Find shortest paths from start to transfer station and transfer station to end
+            shortest_path_pairs_way_s_t = all_shortest_paths(G, btw_all_id_pairs_list_unique_s_t[0], city_sub_new_edges)
+            duplicate_row_count_way_s_t, shortest_path_edges_way_s_t, edges_way_s_t = edges_with_count_weight(shortest_path_pairs_way_s_t, city_sub_new_edges)
+            shortest_path_pairs_way_t_e = all_shortest_paths(G, btw_all_id_pairs_list_unique_t_e[0], city_sub_new_edges)
+            duplicate_row_count_way_t_e, shortest_path_edges_way_t_e, edges_way_t_e = edges_with_count_weight(shortest_path_pairs_way_t_e, city_sub_new_edges)
+
+            # Combine paths from start to transfer and transfer to end
+            shortest_path_edges_way = pd.concat([shortest_path_edges_way_s_t, shortest_path_edges_way_t_e])
+
+        else:
+            # If on the same route, find shortest path directly
+            all_btw_stations_on_same_route_gdf_s_e = all_stations_on_same_route_gdf_transfer(s_e_same_routes_df, city_sub_routes, city_sub_order_route_dict, start_node, end_node)
+            btw_all_id_pairs_list = btw_all_ids_pairs_transfer_all(all_btw_stations_on_same_route_gdf_s_e, city_sub_new_nodes)
+            btw_all_id_pairs_list_unique = drop_df_in_list(btw_all_id_pairs_list)
+
+            # Create ground graph
+            G = create_ground_graph(city_sub_new_edges, city_sub_new_nodes)
+
+            # Find shortest paths
+            shortest_path_pairs_way = all_shortest_paths(G, btw_all_id_pairs_list_unique[0], city_sub_new_edges)
+            duplicate_row_count_way, shortest_path_edges_way, edges_way = edges_with_count_weight(shortest_path_pairs_way, city_sub_new_nodes)
+
+        # Store the result in the dictionary
+        OD_edges_result_dict[index] = shortest_path_edges_way.copy()
+        print(index)
+
+    return OD_edges_result_dict
+
+
+
+
+
+
+
+
+
 
 
 
