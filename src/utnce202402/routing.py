@@ -147,6 +147,38 @@ def all_shortest_paths(G, id_pairs, edges):
         
     return shortest_path_pairs
 
+
+def all_shortest_path_id_list(G, id_pairs, edges):
+    """
+    Find all shortest paths between start and end nodes and extract corresponding edges.
+
+    Args:
+    - id_pairs: a pandas DataFrame containing start and end node IDs for each path
+    - edges: a pandas DataFrame containing edges in the network, with columns 'from_id', 'to_id', and 'weights'
+
+    Returns:
+    - shortest_path_pairs: a pandas DataFrame containing the edges for all shortest paths found
+
+    Example:
+    >>> shortest_path_pairs = all_shortest_paths(id_pairs, edges)
+
+    Note: This function requires the pandas and networkx libraries to be installed.
+    """
+    row_num = id_pairs.shape[0]
+    shortest_path_id_list = []
+    
+    for i in range(row_num):
+        s_id = id_pairs.loc[i,'s_id']
+        e_id = id_pairs.loc[i,'e_id']
+        try:
+            # Find shortest path between start and end nodes
+            path_s_e = nx.shortest_path(G, source=s_id, target=e_id, weight= "weight")
+            shortest_path_id_list.extend(path_s_e)
+        except nx.NetworkXNoPath:
+            continue
+        
+    return shortest_path_id_list
+
     
 # Calculates the number of repetitions of each used edge and add the number to 'edges' with column of 'count_weight'
 def edges_with_count_weight(shortest_path_pairs, edges):
