@@ -890,3 +890,50 @@ def id_pairs_inline(tram_line_dict,tram_order_route_dict,nodes):
         tram_order_id_pairs[line] = id_pairs(tram_order_coordinates_pairs[line],nodes)
     
     return tram_order_id_pairs
+
+def edges_revise_direction(city_sub_all_shortest_paths_id_dict,city_sub_edges):
+    # Get the keys of city_sub_all_shortest_paths_id_dict
+    routes = list(city_sub_all_shortest_paths_id_dict.keys())
+
+    # Collect all combinations of node IDs
+    collect_all = []
+    for route in routes:
+        node_ids = city_sub_all_shortest_paths_id_dict[route]
+        # Form pairs of consecutive node IDs
+        collect_all.append(list(zip(node_ids, node_ids[1:] + node_ids[:1]))[:-1])
+
+    # Flatten the list of lists and make it unique
+    all_combinations = list(set(list(itertools.chain(*collect_all))))
+
+    # Collect new order of edges and their indices
+    collect_new_order = []
+    collect_index = []
+
+    index = 0
+    for item in list(zip(city_sub_edges.from_id,city_sub_edges.to_id)):
+        for ordered in all_combinations:
+            # Check if the edge order matches any of the combinations
+            if sorted(item) == sorted(ordered):
+                if sum(item) == sum(ordered):
+                    collect_new_order.append(ordered)
+                    collect_index.append(index)
+        index += 1
+    
+    # Create DataFrame for new ordered edges
+    new_ordered_edges_from_to = pd.DataFrame(pd.Series(collect_new_order).tolist(), columns=['from_id_new','to_id_new'], index=collect_index)
+    # Merge new ordered edges with original edges
+    new_ordered_edges = new_ordered_edges_from_to.merge(city_sub_edges, left_index=True, right_index=True, how='outer')
+    
+    # Fill missing values with original values
+    new_ordered_edges.from_id_new = new_ordered_edges.from_id_new.fillna(new_ordered_edges.from_id)
+    new_ordered_edges.to_id_new = new_ordered_edges.to_id_new.fillna(new_ordered_edges.to_id)
+
+    # Convert columns to integer type
+    new_ordered_edges[['from_id_new', 'to_id_new','id','weights']] = new_ordered_edges[['from_id_new', 'to_id_new','id','weights']].astype(int)
+
+    new_ordered_edges = new_ordered_edges.drop(columns=['from_id', 'to_id','from_to','to_from'])
+    new_ordered_edges = new_ordered_edges.rename(columns={'from_id_new': 'from_id', 'to_id_new':'to_id'})
+
+    new_ordered_edges['from_to'] = [(from_id, to_id) for from_id, to_id in zip(new_ordered_edges['from_id'], new_ordered_edges['to_id'])]
+    new_ordered_edges['to_from'] = [(to_id, from_id) for to_id, from_id in zip(new_ordered_edges['to_id'], new_ordered_edges['from_id'])]
+    return new_ordered_edges

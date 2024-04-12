@@ -207,9 +207,6 @@ def edges_with_count_weight(shortest_path_pairs, edges):
     duplicate_row_count = duplicate_row_count.reset_index()
     duplicate_row_count.columns = ['id','count_weight']
     
-    # Merge the 'count_weight' values with the original edges DataFrame
-    # edges = pd.merge(edges, duplicate_row_count, on='id', how='left')
-    # edges['count_weight'] = edges['count_weight'].fillna(1)
     # Merge the 'count_weight' values with the edges used in the shortest paths DataFrame
     shortest_path_edges = pd.merge(shortest_path_pairs,duplicate_row_count, on='id', how='left')
     shortest_path_edges['count_weight'] = shortest_path_edges['count_weight'].fillna(1)
