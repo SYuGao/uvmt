@@ -161,3 +161,44 @@ def plot_routes(routes_file, edges, shortest_path_edges):
 
     # Show the plot
     plt.show()
+
+
+def plot_OD_routes(OD_shortest_path_edges,city_sub_connected_edges):
+    if not bool(OD_shortest_path_edges):
+        print("OD_shortest_path_edges is empty")
+    else:
+        shortest_edges_list = list(OD_shortest_path_edges.items())
+        num_plots = len(OD_shortest_path_edges)
+        
+        if num_plots > 1:
+        
+            colors = ['black', 'green', 'blue', 'orange', 'purple']
+
+            fig, axes = plt.subplots(num_plots, 1, figsize=(40, 40))
+
+
+            for i, ax in enumerate(axes.flat):
+                if i < num_plots:
+
+                    color = colors[i % len(colors)]
+
+
+                    gpd.GeoDataFrame(city_sub_connected_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
+
+
+                    gpd.GeoDataFrame(shortest_edges_list[i][1].copy()).plot(ax=ax, zorder=1,
+                                                                 linewidth=2,
+                                                                 color=color)
+                    ax.set_title(str(shortest_edges_list[i][0]))
+                else:
+ 
+                    ax.axis('off')
+
+
+                ax.axis('off')
+        else:
+            fig, ax = plt.subplots(num_plots, 1, figsize=(40, 40))
+            gpd.GeoDataFrame(city_sub_connected_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
+            gpd.GeoDataFrame(shortest_edges_list[0][1].copy()).plot(ax=ax, zorder=1,linewidth=2,color='orange')
+            ax.set_title(str(shortest_edges_list[0][0]))
+            ax.axis('off')                                                        

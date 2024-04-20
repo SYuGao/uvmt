@@ -1465,7 +1465,28 @@ def create_connect_edges(transfer_stations_sub_to_tram):
     return result_df
 
 
+def create_connect_edges_one_network(connect_stations,id_edges_length_sub,city_sub_new_edges):
+    
+    id_list = list(connect_stations['id'])
+    id_pairs_list = list(permutations(id_list, 2))
 
+    connect_station_coordinate_list = list(connect_stations['coordinate_value'])
+    line_segments = []
+    for pair in permutations(connect_station_coordinate_list, 2):
+        line_segments.append(LineString(pair))
+
+    connect_edges = pd.DataFrame({
+                'from_id':[pair[0] for pair in id_pairs_list], 
+                'to_id':[pair[1] for pair in id_pairs_list], 
+                'from_to': id_pairs_list, 
+                'to_from': [(pair[1], pair[0])for pair in id_pairs_list],            
+                'geometry': line_segments})
+
+    connect_edges_id_list = [id_edges_length_sub] + [i for i in range(id_edges_length_sub+1, id_edges_length_sub+len(connect_edges))]
+    connect_edges['id'] = connect_edges_id_list
+    connect_edges['weights'] = city_sub_new_edges.sort_values(by = 'weights').weights.iloc[-1] + 1
+    connect_edges['time'] = city_sub_new_edges.sort_values(by = 'time').time.iloc[-1] + 0.1
+    return connect_edges
 
 
 
