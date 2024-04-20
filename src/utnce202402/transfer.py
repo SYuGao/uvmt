@@ -1343,19 +1343,74 @@ def convert_deg_to_meter(new_nodes_df):
     return new_nodes_df
 
 
-def new_nodes_buffer(new_nodes_df,buffer_radius):
+# def new_nodes_buffer(new_nodes_df,buffer_radius):
+#     new_nodes_df = convert_deg_to_meter(new_nodes_df)
+#     node_buffers = []
+
+#     for index, row in new_nodes_df.iterrows():
+#         point = row['geometry']
+#         buffer = point.buffer(buffer_radius)
+#         node_buffers.append(buffer)
+
+#     buffered_gdf = gpd.GeoDataFrame(geometry=node_buffers)
+#     buffered_df = pd.DataFrame(buffered_gdf).rename(columns={'geometry': 'buffer_geometry'})
+#     new_nodes_buffer_geometry = pd.concat([new_nodes_df,buffered_df],axis=1)
+#     return new_nodes_buffer_geometry    
+def new_nodes_buffer(new_nodes_df, buffer_radius):
+    """
+    Create buffer polygons around new nodes in a GeoDataFrame.
+
+    Parameters:
+        new_nodes_df (GeoDataFrame): A GeoDataFrame containing the new nodes with their geometry.
+        buffer_radius (float): The radius of the buffer around each new node, in meters.
+
+    Returns:
+        new_nodes_buffer_geometry (DataFrame): A DataFrame containing the original new nodes data 
+                                                along with buffer polygons geometry.
+
+    Example:
+        new_nodes_df = gpd.GeoDataFrame({
+            'id': [1, 2, 3],
+            'geometry': [Point(10, 20), Point(15, 25), Point(20, 30)]
+        })
+        buffer_radius = 100  # buffer radius in meters
+
+        new_nodes_buffer_geometry = new_nodes_buffer(new_nodes_df, buffer_radius)
+
+    Explanation:
+        - This function creates buffer polygons around new nodes in a GeoDataFrame.
+        - It first converts the latitude and longitude coordinates of new nodes to meters using convert_deg_to_meter function.
+        - Then, it iterates over each row in the new_nodes_df GeoDataFrame.
+        - For each new node, it creates a buffer polygon around the node's geometry with the specified buffer radius.
+        - The buffer polygons are stored in a list called node_buffers.
+        - These buffer polygons are converted into a GeoDataFrame called buffered_gdf.
+        - The buffered_gdf is then converted to a DataFrame called buffered_df, renaming the geometry column to 'buffer_geometry'.
+        - The original new_nodes_df and buffered_df are concatenated along the columns axis to create new_nodes_buffer_geometry DataFrame.
+        - Finally, the new_nodes_buffer_geometry DataFrame containing the original new nodes data along with buffer polygons geometry is returned.
+    """
+    # Convert latitude and longitude coordinates of new nodes to meters
     new_nodes_df = convert_deg_to_meter(new_nodes_df)
+    # Initialize an empty list to store buffer polygons
     node_buffers = []
 
+    # Iterate over each row in the new_nodes_df GeoDataFrame
     for index, row in new_nodes_df.iterrows():
+        # Get the point geometry of the new node
         point = row['geometry']
+        # Create a buffer polygon around the point geometry with the specified buffer radius
         buffer = point.buffer(buffer_radius)
+        # Add the buffer polygon to the node_buffers list
         node_buffers.append(buffer)
 
+    # Convert the list of buffer polygons to a GeoDataFrame
     buffered_gdf = gpd.GeoDataFrame(geometry=node_buffers)
+    # Convert the buffered_gdf to a DataFrame, renaming the geometry column to 'buffer_geometry'
     buffered_df = pd.DataFrame(buffered_gdf).rename(columns={'geometry': 'buffer_geometry'})
-    new_nodes_buffer_geometry = pd.concat([new_nodes_df,buffered_df],axis=1)
-    return new_nodes_buffer_geometry    
+    # Concatenate the original new_nodes_df and buffered_df along the columns axis
+    new_nodes_buffer_geometry = pd.concat([new_nodes_df, buffered_df], axis=1)
+    
+    # Return the DataFrame containing the original new nodes data along with buffer polygons geometry
+    return new_nodes_buffer_geometry
 
 
 def add_footnote_to_new_nodes(new_nodes_df):
@@ -1465,28 +1520,68 @@ def create_connect_edges(transfer_stations_sub_to_tram):
     return result_df
 
 
-def create_connect_edges_one_network(connect_stations,id_edges_length_sub,city_sub_new_edges):
-    
+def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city_sub_new_edges):
+    """
+    Create connecting edges between stations in a network.
+
+    Parameters:
+        connect_stations (DataFrame): A DataFrame containing information about connecting stations.
+        id_edges_length_sub (int): The starting ID number for the connecting edges.
+        city_sub_new_edges (DataFrame): A DataFrame containing information about existing edges in the network.
+
+    Returns:
+        connect_edges (DataFrame): A DataFrame containing information about the connecting edges.
+
+    Example:
+        connect_stations = pd.DataFrame({
+            'id': [1, 2, 3],
+            'coordinate_value': [(10, 20), (15, 25), (20, 30)]
+        })
+        id_edges_length_sub = 100  # starting ID number for connecting edges
+        city_sub_new_edges = pd.DataFrame(...)  # DataFrame containing existing edges in the network
+
+        connect_edges = create_connect_edges_one_network(connect_stations, id_edges_length_sub, city_sub_new_edges)
+
+    Explanation:
+        - This function creates connecting edges between stations in a network.
+        - It generates all possible pairs of stations from the connect_stations DataFrame.
+        - For each pair of stations, it creates a LineString representing the edge between them.
+        - The information about these connecting edges is stored in the connect_edges DataFrame.
+        - Each connecting edge is assigned a unique ID number starting from id_edges_length_sub.
+        - The weights and time attributes of the connecting edges are set to values higher than the maximum values in the city_sub_new_edges DataFrame.
+        - Finally, the connect_edges DataFrame containing information about the connecting edges is returned.
+    """
+    # Extract IDs of connecting stations
     id_list = list(connect_stations['id'])
+    # Generate all possible pairs of station IDs
     id_pairs_list = list(permutations(id_list, 2))
 
+    # Extract coordinates of connecting stations
     connect_station_coordinate_list = list(connect_stations['coordinate_value'])
-    line_segments = []
-    for pair in permutations(connect_station_coordinate_list, 2):
-        line_segments.append(LineString(pair))
+    # Create LineString segments for connecting edges
+    line_segments = [LineString(pair) for pair in permutations(connect_station_coordinate_list, 2)]
 
+    # Create a DataFrame to store information about connecting edges
     connect_edges = pd.DataFrame({
-                'from_id':[pair[0] for pair in id_pairs_list], 
-                'to_id':[pair[1] for pair in id_pairs_list], 
-                'from_to': id_pairs_list, 
-                'to_from': [(pair[1], pair[0])for pair in id_pairs_list],            
-                'geometry': line_segments})
+        'from_id': [pair[0] for pair in id_pairs_list],
+        'to_id': [pair[1] for pair in id_pairs_list],
+        'from_to': id_pairs_list,
+        'to_from': [(pair[1], pair[0]) for pair in id_pairs_list],
+        'geometry': line_segments
+    })
 
-    connect_edges_id_list = [id_edges_length_sub] + [i for i in range(id_edges_length_sub+1, id_edges_length_sub+len(connect_edges))]
+    # Assign unique IDs to connecting edges
+    connect_edges_id_list = [id_edges_length_sub] + [i for i in range(id_edges_length_sub + 1, id_edges_length_sub + len(connect_edges))]
     connect_edges['id'] = connect_edges_id_list
-    connect_edges['weights'] = city_sub_new_edges.sort_values(by = 'weights').weights.iloc[-1] + 1
-    connect_edges['time'] = city_sub_new_edges.sort_values(by = 'time').time.iloc[-1] + 0.1
+    
+    # Set weights attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges
+    connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 1
+    # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges
+    connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] + 0.1
+    
+    # Return the DataFrame containing information about the connecting edges
     return connect_edges
+
 
 
 
