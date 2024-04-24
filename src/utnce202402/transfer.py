@@ -1437,7 +1437,7 @@ def transfer_A_to_B(A_new_nodes_buffer_geometry,B_new_nodes_ftn):
     transfer_stations_A_to_B = pd.DataFrame()
     
     for index, row in A_new_nodes_buffer_geometry.iterrows():
-        each_transfer_stations_df = B_new_nodes_ftn[row['buffer_geometry'].intersects(B_new_nodes_ftn.iloc[:, 0])]
+        each_transfer_stations_df = B_new_nodes_ftn[row['buffer_geometry'].intersects(B_new_nodes_ftn.iloc[:, 1])]
         
         if not each_transfer_stations_df.empty:
             replicated_row = pd.concat([row] * len(each_transfer_stations_df), axis=1).transpose()
@@ -1505,8 +1505,8 @@ def create_connect_edges(transfer_stations_sub_to_tram):
 
     for index, row in transfer_stations_sub_to_tram.iterrows():
         line = LineString([list(row.iloc[6]), list(row.iloc[18])])
-        from_id = row.iloc[2]
-        to_id = row.iloc[14]
+        from_id = row.iloc[0]
+        to_id = row.iloc[12]
     
         lines.append(line)
         from_id_list.append(from_id)
