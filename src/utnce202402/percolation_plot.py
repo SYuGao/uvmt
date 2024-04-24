@@ -275,7 +275,8 @@ def plot_OD_routes(OD_shortest_path_edges, city_sub_connected_edges):
             # Plot road network on the map
             gpd.GeoDataFrame(city_sub_connected_edges.copy()).plot(ax=ax, color='gray', alpha=0.2)
             # Plot shortest path edges for the single origin-destination pair
-            gpd.GeoDataFrame(shortest_edges_list[0][1].copy()).plot(ax=ax, zorder=1, linewidth=2, color='orange')
+            # gpd.GeoDataFrame(shortest_edges_list[0][1].copy()).plot(ax=ax, zorder=1, linewidth=2, color='orange')
+            gpd.GeoDataFrame(shortest_edges_list[0][1].copy()).plot(ax=ax, zorder=1, linewidth=(shortest_edges_list[0][1].count_weight) * 2, color='orange')
             # Set subplot title as origin-destination pair key
             ax.set_title(str(shortest_edges_list[0][0]))
             # Turn off axes

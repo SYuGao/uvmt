@@ -1520,6 +1520,10 @@ def create_connect_edges(transfer_stations_sub_to_tram):
     return result_df
 
 
+
+
+
+
 def select_connect_stations_one_network(city_sub_new_stations):
     """
     Selects stations that connect four different lines from a DataFrame of subway stations.
@@ -1626,7 +1630,7 @@ def connected_all_edges_dataframe(connect_stations_name, city_sub_new_stations, 
     Returns:
         pandas.DataFrame: DataFrame of connected edges between subway stations.
     """
-
+    connect_edges_dfs = {}
     # Iterate over each connecting station
     for i in range(len(connect_stations_name)):
         # Select DataFrame for the current connecting station
@@ -1637,15 +1641,17 @@ def connected_all_edges_dataframe(connect_stations_name, city_sub_new_stations, 
             connect_edges = create_connect_edges_one_network(connect_stations_df, id_edges_length_sub, city_sub_new_edges)
             city_sub_connected_edges = pd.concat([city_sub_new_edges, connect_edges]).reset_index(drop=True)
             id_connected_edges_length_sub = id_edges_length_sub + len(connect_edges)
+            print(connect_edges)
         else:
             connect_edges = create_connect_edges_one_network(connect_stations_df, id_connected_edges_length_sub, city_sub_new_edges)
             city_sub_connected_edges = pd.concat([city_sub_connected_edges, connect_edges]).reset_index(drop=True)
             id_connected_edges_length_sub = id_connected_edges_length_sub + len(connect_edges)
-
+            print(connect_edges)
+        connect_edges_dfs[connect_stations_name[i]] = connect_edges
         # Update ID for the next set of edges
         # print(id_connected_edges_length_sub)
 
-    return city_sub_connected_edges
+    return city_sub_connected_edges, connect_edges_dfs
 
 
 
