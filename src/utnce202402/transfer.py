@@ -1496,11 +1496,33 @@ def add_ref_transfer_all_to_new_nodes(transfer_stations_A_to_B, transfer_station
     return A_new_nodes_transfer_all
 
 
+# def create_connect_edges(transfer_stations_sub_to_tram):
+    
+#     lines = []
+#     from_id_list = []
+#     to_id_list = []
+
+
+#     for index, row in transfer_stations_sub_to_tram.iterrows():
+#         line = LineString([list(row.iloc[6]), list(row.iloc[18])])
+#         from_id = row.iloc[0]
+#         to_id = row.iloc[12]
+    
+#         lines.append(line)
+#         from_id_list.append(from_id)
+#         to_id_list.append(to_id)
+
+#     result_df = pd.DataFrame({'geometry': lines,
+#                               'from_id':from_id_list,
+#                               'to_id':to_id_list})
+#     result_df['from_to'] = list(zip(result_df.from_id,result_df.to_id))
+#     result_df['to_from'] = list(zip(result_df.to_id,result_df.from_id))
+#     return result_df
 def create_connect_edges(transfer_stations_sub_to_tram):
     
-    lines = []
-    from_id_list = []
-    to_id_list = []
+    lines1 = []
+    from_id_list1 = []
+    to_id_list1 = []
 
 
     for index, row in transfer_stations_sub_to_tram.iterrows():
@@ -1508,17 +1530,39 @@ def create_connect_edges(transfer_stations_sub_to_tram):
         from_id = row.iloc[0]
         to_id = row.iloc[12]
     
-        lines.append(line)
-        from_id_list.append(from_id)
-        to_id_list.append(to_id)
+        
+        lines1.append(line)
+        from_id_list1.append(from_id)
+        to_id_list1.append(to_id)
 
-    result_df = pd.DataFrame({'geometry': lines,
-                              'from_id':from_id_list,
-                              'to_id':to_id_list})
+    result_df1 = pd.DataFrame({'geometry': lines1,
+                              'from_id':from_id_list1,
+                              'to_id':to_id_list1})
+
+
+    lines2 = []
+    from_id_list2 = []
+    to_id_list2 = []
+
+
+    for index, row in transfer_stations_sub_to_tram.iterrows():
+        line = LineString([list(row.iloc[18]), list(row.iloc[6])])
+        from_id = row.iloc[12]
+        to_id = row.iloc[0]
+    
+        
+        lines2.append(line)
+        from_id_list2.append(from_id)
+        to_id_list2.append(to_id)
+
+    result_df2 = pd.DataFrame({'geometry': lines2,
+                              'from_id':from_id_list2,
+                              'to_id':to_id_list2}) 
+
+    result_df = pd.concat([result_df1,result_df2])
     result_df['from_to'] = list(zip(result_df.from_id,result_df.to_id))
     result_df['to_from'] = list(zip(result_df.to_id,result_df.from_id))
     return result_df
-
 
 
 
@@ -1554,6 +1598,67 @@ def select_connect_stations_one_network(city_sub_new_stations):
     return connect_stations_name, connect_stations_dataframe
 
 
+# def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city_sub_new_edges):
+#     """
+#     Create connecting edges between stations in a network.
+
+#     Parameters:
+#         connect_stations (DataFrame): A DataFrame containing information about connecting stations.
+#         id_edges_length_sub (int): The starting ID number for the connecting edges.
+#         city_sub_new_edges (DataFrame): A DataFrame containing information about existing edges in the network.
+
+#     Returns:
+#         connect_edges (DataFrame): A DataFrame containing information about the connecting edges.
+
+#     Example:
+#         connect_stations = pd.DataFrame({
+#             'id': [1, 2, 3],
+#             'coordinate_value': [(10, 20), (15, 25), (20, 30)]
+#         })
+#         id_edges_length_sub = 100  # starting ID number for connecting edges
+#         city_sub_new_edges = pd.DataFrame(...)  # DataFrame containing existing edges in the network
+
+#         connect_edges = create_connect_edges_one_network(connect_stations, id_edges_length_sub, city_sub_new_edges)
+
+#     Explanation:
+#         - This function creates connecting edges between stations in a network.
+#         - It generates all possible pairs of stations from the connect_stations DataFrame.
+#         - For each pair of stations, it creates a LineString representing the edge between them.
+#         - The information about these connecting edges is stored in the connect_edges DataFrame.
+#         - Each connecting edge is assigned a unique ID number starting from id_edges_length_sub.
+#         - The weights and time attributes of the connecting edges are set to values higher than the maximum values in the city_sub_new_edges DataFrame.
+#         - Finally, the connect_edges DataFrame containing information about the connecting edges is returned.
+#     """
+#     # Extract IDs of connecting stations
+#     id_list = list(connect_stations['id'])
+#     # Generate all possible pairs of station IDs
+#     id_pairs_list = list(permutations(id_list, 2))
+
+#     # Extract coordinates of connecting stations
+#     connect_station_coordinate_list = list(connect_stations['coordinate_value'])
+#     # Create LineString segments for connecting edges
+#     line_segments = [LineString(pair) for pair in permutations(connect_station_coordinate_list, 2)]
+
+#     # Create a DataFrame to store information about connecting edges
+#     connect_edges = pd.DataFrame({
+#         'from_id': [pair[0] for pair in id_pairs_list],
+#         'to_id': [pair[1] for pair in id_pairs_list],
+#         'from_to': id_pairs_list,
+#         'to_from': [(pair[1], pair[0]) for pair in id_pairs_list],
+#         'geometry': line_segments
+#     })
+
+#     # Assign unique IDs to connecting edges
+#     connect_edges_id_list = [id_edges_length_sub] + [i for i in range(id_edges_length_sub + 1, id_edges_length_sub + len(connect_edges))]
+#     connect_edges['id'] = connect_edges_id_list
+    
+#     # Set weights attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges
+#     connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 1
+#     # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges
+#     connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] + 0.1
+    
+#     # Return the DataFrame containing information about the connecting edges
+    # return connect_edges
 def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city_sub_new_edges):
     """
     Create connecting edges between stations in a network.
@@ -1594,6 +1699,20 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     connect_station_coordinate_list = list(connect_stations['coordinate_value'])
     # Create LineString segments for connecting edges
     line_segments = [LineString(pair) for pair in permutations(connect_station_coordinate_list, 2)]
+    
+    connect_stations = gpd.GeoDataFrame(connect_stations, geometry='geometry', crs='EPSG:4326')
+    # Define the coordinate reference systems (CRS)
+    crs_deg = 'EPSG:4326'  # WGS 84, the standard coordinate system for GPS
+    crs_meter = 'EPSG:3857'  # World Mercator, commonly used for distance calculations
+
+    # Create a transformer to convert from degrees to meters
+    transformer = Transformer.from_crs(crs_deg, crs_meter, always_xy=True)
+
+    # Apply the transformer to each Point in the 'geometry' column
+    connect_stations['geometry_3857'] = connect_stations['geometry'].apply(lambda point: Point(transformer.transform(point.x, point.y)))
+    connect_stations_geometry_list = list(connect_stations['geometry_3857'])
+    distance_list = [LineString(pair).length for pair in permutations(connect_stations_geometry_list, 2)]
+    
 
     # Create a DataFrame to store information about connecting edges
     connect_edges = pd.DataFrame({
@@ -1601,7 +1720,8 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
         'to_id': [pair[1] for pair in id_pairs_list],
         'from_to': id_pairs_list,
         'to_from': [(pair[1], pair[0]) for pair in id_pairs_list],
-        'geometry': line_segments
+        'geometry': line_segments,
+        'distance': distance_list
     })
 
     # Assign unique IDs to connecting edges
@@ -1612,10 +1732,11 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 1
     # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges
     connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] + 0.1
-    
+    connect_edges = connect_edges[connect_edges['distance'] <= 500 ]
+   
     # Return the DataFrame containing information about the connecting edges
     return connect_edges
-
+    
     
 def connected_all_edges_dataframe(connect_stations_name, city_sub_new_stations, id_edges_length_sub, city_sub_new_edges):
     """
@@ -1641,12 +1762,12 @@ def connected_all_edges_dataframe(connect_stations_name, city_sub_new_stations, 
             connect_edges = create_connect_edges_one_network(connect_stations_df, id_edges_length_sub, city_sub_new_edges)
             city_sub_connected_edges = pd.concat([city_sub_new_edges, connect_edges]).reset_index(drop=True)
             id_connected_edges_length_sub = id_edges_length_sub + len(connect_edges)
-            print(connect_edges)
+            # print(connect_edges)
         else:
             connect_edges = create_connect_edges_one_network(connect_stations_df, id_connected_edges_length_sub, city_sub_new_edges)
             city_sub_connected_edges = pd.concat([city_sub_connected_edges, connect_edges]).reset_index(drop=True)
             id_connected_edges_length_sub = id_connected_edges_length_sub + len(connect_edges)
-            print(connect_edges)
+            # print(connect_edges)
         connect_edges_dfs[connect_stations_name[i]] = connect_edges
         # Update ID for the next set of edges
         # print(id_connected_edges_length_sub)
