@@ -1,0 +1,26 @@
+name: py_s
+
+channels:
+    - conda-forge
+
+dependencies:
+        - python=3.10
+        - gdal
+        - numpy
+        - pandas
+        - shapely
+        - geopandas
+        - rasterio
+        - matplotlib
+        - cartopy
+        - contextily
+        - tqdm
+        - rasterstats
+        - pip
+        - seaborn
+        - jupyter
+        - jupyterlab
+        - python-igraph
+        - networkx
+   
+          
