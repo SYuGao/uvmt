@@ -1,5 +1,0 @@
-/data/rotterdam.bus.largest.pbfe filter=lfs diff=lfs merge=lfs -text
-../data/rotterdam.bus.largest.pbf filter=lfs diff=lfs merge=lfs -text
-/data/rotterdam.bus.largest.pbf filter=lfs diff=lfs merge=lfs -text
-*.png filter=lfs diff=lfs merge=lfs -text
-*.ipynb filter=lfs diff=lfs merge=lfs -text
