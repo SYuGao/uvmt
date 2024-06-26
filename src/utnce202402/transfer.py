@@ -1810,10 +1810,13 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     connect_edges_id_list = [id_edges_length_sub] + [i for i in range(id_edges_length_sub + 1, id_edges_length_sub + len(connect_edges))]
     connect_edges['id'] = connect_edges_id_list
     
-    # Set weights attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges
-    connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 1
-    # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges
-    connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] + 0.1
+    # Set weights attribute of connecting edges to a value much more higher than the maximum value in city_sub_new_edges to avoid frequently transfer: 15 min/60 min*25000 m/h
+    # connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 1
+    connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 15/60*25000
+    
+    # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges: 15mins for passengers' walking transfer
+    # connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] +  1
+    connect_edges['time'] = 15
     
     # Return the DataFrame containing information about the connecting edges
     return connect_edges
