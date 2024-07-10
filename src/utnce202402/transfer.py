@@ -229,12 +229,19 @@ def add_columns_to_edges(shortest_path_edges, edges):
     shortest_path_edges_df = shortest_path_edges_df.drop(columns=['ref_x'])
     shortest_path_edges_df = shortest_path_edges_df.rename(columns={'ref_y': 'ref'})
 
+    # convert LineString into WKT（well_known Text）
+    edges_df = pd.DataFrame(edges.copy())
+    edges_df['geometry_str'] = edges_df['geometry'].apply(lambda geom: geom.wkt if geom else None)
+    shortest_path_edges_df['geometry_str'] = shortest_path_edges_df['geometry'].apply(lambda geom: geom.wkt if geom else None)
+
     # Merge 'edges' with 'shortest_path_edges_df' based on 'geometry' to add additional data to 'edges'
-    new_edges = pd.merge(edges, shortest_path_edges_df, on='geometry', how='outer')
+    new_edges = pd.merge(edges_df, shortest_path_edges_df, on='geometry_str', how='outer')
+    # new_edges = pd.merge(edges, shortest_path_edges_df, on='geometry', how='outer')
     
     # Select and rename relevant columns in 'new_edges'
-    new_edges = new_edges[['osm_id_x', 'geometry', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x', 'count_weight', 'route_name_list', 'route', 'ref']]
+    new_edges = new_edges[['osm_id_x', 'geometry_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x', 'count_weight', 'route_name_list', 'route', 'ref']]
     new_edges = new_edges.rename(columns={'osm_id_x': 'osm_id',
+                                         'geometry_x':'geometry',
                                          'railway_x': 'railway',
                                          'service_x': 'service',
                                          'id_x': 'id',
