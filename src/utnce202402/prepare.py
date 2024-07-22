@@ -434,8 +434,8 @@ def expand_edges(edges):
     - The 'weights' column is created by rounding the 'distance' column to the nearest integer.
     - The 'to_from' and 'from_to' columns are created to facilitate conversion between edge formats.
     """
-    # Round the distance to the nearest integer and store it in a new column 'weights'
-    edges['weights'] = edges['distance'].astype(int)
+    # # Round the distance to the nearest integer and store it in a new column 'weights'
+    # edges['weights'] = edges['distance'].astype(int)
 
     # Create 'to_from' and 'from_to' columns to facilitate conversion between edge formats
     edges['to_from'] = list(zip(edges.from_id, edges.to_id))
@@ -929,7 +929,7 @@ def edges_revise_direction(city_sub_all_shortest_paths_id_dict,city_sub_edges):
     new_ordered_edges.to_id_new = new_ordered_edges.to_id_new.fillna(new_ordered_edges.to_id)
 
     # Convert columns to integer type
-    new_ordered_edges[['from_id_new', 'to_id_new','id','weights']] = new_ordered_edges[['from_id_new', 'to_id_new','id','weights']].astype(int)
+    new_ordered_edges[['from_id_new', 'to_id_new','id']] = new_ordered_edges[['from_id_new', 'to_id_new','id']].astype(int)
 
     new_ordered_edges = new_ordered_edges.drop(columns=['from_id', 'to_id','from_to','to_from'])
     new_ordered_edges = new_ordered_edges.rename(columns={'from_id_new': 'from_id', 'to_id_new':'to_id'})

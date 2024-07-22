@@ -46,7 +46,7 @@ def create_ground_graph(edges, nodes):
     Note: This function requires the pandas, geopandas, and networkx libraries to be installed.
     """
     # Extract the edges from the input DataFrame and create a list of tuples with weights
-    od = edges[['from_id', 'to_id', 'weights']]
+    od = edges[['from_id', 'to_id', 'distance']]
     edges_list = []
     for i, row in od.iterrows():
         weight_dict = {"weight": row[2]}
@@ -149,21 +149,7 @@ def all_shortest_paths(G, id_pairs, edges):
 
 
 def all_shortest_path_id_list(G, id_pairs, edges):
-    """
-    Find all shortest paths between start and end nodes and extract corresponding edges.
 
-    Args:
-    - id_pairs: a pandas DataFrame containing start and end node IDs for each path
-    - edges: a pandas DataFrame containing edges in the network, with columns 'from_id', 'to_id', and 'weights'
-
-    Returns:
-    - shortest_path_pairs: a pandas DataFrame containing the edges for all shortest paths found
-
-    Example:
-    >>> shortest_path_pairs = all_shortest_paths(id_pairs, edges)
-
-    Note: This function requires the pandas and networkx libraries to be installed.
-    """
     row_num = id_pairs.shape[0]
     shortest_path_id_list = []
     

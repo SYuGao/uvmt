@@ -239,7 +239,7 @@ def add_columns_to_edges(shortest_path_edges, edges):
     # new_edges = pd.merge(edges, shortest_path_edges_df, on='geometry', how='outer')
     
     # Select and rename relevant columns in 'new_edges'
-    new_edges = new_edges[['osm_id_x', 'geometry_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'weights_x', 'to_from_x', 'from_to_x', 'count_weight', 'route_name_list', 'route', 'ref']]
+    new_edges = new_edges[['osm_id_x', 'geometry_x', 'railway_x', 'service_x', 'id_x', 'from_id_x', 'to_id_x', 'distance_x', 'time_x', 'to_from_x', 'from_to_x', 'count_weight', 'route_name_list', 'route', 'ref']]
     new_edges = new_edges.rename(columns={'osm_id_x': 'osm_id',
                                          'geometry_x':'geometry',
                                          'railway_x': 'railway',
@@ -249,7 +249,6 @@ def add_columns_to_edges(shortest_path_edges, edges):
                                          'to_id_x': 'to_id',
                                          'distance_x': 'distance',
                                          'time_x': 'time',
-                                         'weights_x': 'weights',
                                          'to_from_x': 'to_from',
                                          'from_to_x': 'from_to'})
     
