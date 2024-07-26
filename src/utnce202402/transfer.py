@@ -1818,11 +1818,13 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     
     # Set weights attribute of connecting edges to a value much more higher than the maximum value in city_sub_new_edges to avoid frequently transfer: 15 min/60 min*25000 m/h
     # connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 1
-    connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 15/60*25000
+    # connect_edges['weights'] = city_sub_new_edges.sort_values(by='weights').weights.iloc[-1] + 15/60*25000
+    connect_edges['weights'] = city_sub_new_edges.sort_values(by='distance').distance.iloc[-1] + 15/60*25000
     
     # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges: 15mins for passengers' walking transfer
     # connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] +  1
     connect_edges['time'] = 15
+    connect_edges['wcl_weights'] = 300
     
     # Return the DataFrame containing information about the connecting edges
     return connect_edges
@@ -1859,8 +1861,8 @@ def connected_all_edges_dataframe(connect_stations_name, city_sub_new_stations, 
             id_connected_edges_length_sub = id_connected_edges_length_sub + len(connect_edges)
             # print(connect_edges)
         connect_edges_dfs[connect_stations_name[i]] = connect_edges
-        # Update ID for the next set of edges
-        # print(id_connected_edges_length_sub)
+        city_sub_connected_edges['weights'] = city_sub_connected_edges['weights'].fillna(city_sub_connected_edges['distance'])
+
 
     return city_sub_connected_edges, connect_edges_dfs
 
