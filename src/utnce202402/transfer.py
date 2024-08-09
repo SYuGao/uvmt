@@ -1825,11 +1825,11 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges: 15mins for passengers' walking transfer
     # connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] +  1
     connect_edges['time'] = 15
-    connect_edges['wcl_weights'] = 500
+    # connect_edges['wcl_weights'] = 500
     # connect_edges['wcl_weights'] = 300
     # connect_edges['wcl_weights'] = 600
     # connect_edges['wcl_weights'] = 700
-    # connect_edges['wcl_weights'] = 800
+    connect_edges['wcl_weights'] = 800
     # connect_edges['wcl_weights'] = 1200
     # connect_edges['wcl_weights'] = 900
     # connect_edges['wcl_weights'] = 980
