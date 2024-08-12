@@ -1829,12 +1829,13 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     # connect_edges['wcl_weights'] = 300
     # connect_edges['wcl_weights'] = 600
     # connect_edges['wcl_weights'] = 700
-    connect_edges['wcl_weights'] = 800
+    # connect_edges['wcl_weights'] = 800
     # connect_edges['wcl_weights'] = 1200
     # connect_edges['wcl_weights'] = 900
     # connect_edges['wcl_weights'] = 980
     # connect_edges['wcl_weights'] = 1000
     # connect_edges['wcl_weights'] = 1100
+    connect_edges['wcl_weights'] = 1500
     # connect_edges['wcl_weights'] = connect_edges['distance'] + 60
     
     # Return the DataFrame containing information about the connecting edges
