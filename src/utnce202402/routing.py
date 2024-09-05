@@ -63,7 +63,8 @@ def create_ground_graph(edges, nodes):
     
     return G
 
-    
+
+
 # Calculate the shorted path
 def shortest_path(G, start_point_id, end_point_id, edges, weight = "weight"):   # calculate the shortest path for one start_end_node id_pair
     """
@@ -105,7 +106,7 @@ def shortest_path(G, start_point_id, end_point_id, edges, weight = "weight"):   
     
    
     # Select the edges that belong to the shortest path and compute their linewidth based on their weight
-    short_path_edges = edges.loc[edges.to_from.isin(list(pairwise(path_s_e))) | edges.from_to.isin(list(pairwise(path_s_e)))]
+    short_path_edges = edges.loc[edges.from_to.isin(list(pairwise(path_s_e)))]
     #short_path_edges['linewidth'] = short_path_edges['weights'].apply(lambda x: np.ceil(x * 0.01 / 2))   # test 'linewidth' with one pair and there is no practical significance camparing with several routes and can be left out of the calculation 
     
     # Return the computed values as a tuple
@@ -137,7 +138,7 @@ def all_shortest_paths(G, id_pairs, edges):
             # Find shortest path between start and end nodes
             path_s_e = nx.shortest_path(G, source=s_id, target=e_id, weight= "weight")
             # Extract edges corresponding to shortest path
-            short_path_edges = edges.loc[edges.to_from.isin(list(pairwise(path_s_e))) | edges.from_to.isin(list(pairwise(path_s_e)))]
+            short_path_edges = edges.loc[edges.from_to.isin(list(pairwise(path_s_e)))]
             shortest_path_pairs = pd.concat([shortest_path_pairs,short_path_edges])
         except nx.NetworkXNoPath:
             # If no path exists between start and end nodes, continue to next pair
@@ -146,6 +147,96 @@ def all_shortest_paths(G, id_pairs, edges):
         #print(path_s_e, length_s_e)
         
     return shortest_path_pairs
+
+
+
+
+
+
+
+    
+# # Calculate the shorted path
+# def shortest_path(G, start_point_id, end_point_id, edges, weight = "weight"):   # calculate the shortest path for one start_end_node id_pair
+#     """
+#     Compute the shortest path between two nodes in a given graph, along with its length and the edges that belong to the path.
+
+#     Args:
+#     - G: a networkx Graph object representing the graph
+#     - start_point_id: the ID of the node where the path starts
+#     - end_point_id: the ID of the node where the path ends
+#     - weight: the attribute used to determine the weight of the edges in the graph (default: "weight")
+
+#     Returns:
+#     - a tuple containing:
+#         - the list of nodes that form the shortest path from start_point_id to end_point_id
+#         - the length of the shortest path
+#         - a pandas DataFrame containing the edges that belong to the shortest path, with a new column 'linewidth' that is proportional to the edge weights
+
+#     Example:
+#     >>> import networkx as nx
+#     >>> import pandas as pd
+#     >>> G = nx.Graph()
+#     >>> G.add_edge(0, 1, weight=2.0)
+#     >>> G.add_edge(1, 2, weight=1.0)
+#     >>> G.add_edge(0, 2, weight=3.0)
+#     >>> path, length, edges = shortest_path(G, 0, 2)
+#     >>> print(path)
+#     [0, 1, 2]
+#     >>> print(length)
+#     3.0
+#     >>> print(edges)
+#        from_id  to_id  weights  to_from  from_to  linewidth
+#     0        0      1      2.0      NaN      1.0        1.0
+#     2        1      2      1.0      2.0      NaN        1.0
+#     """
+    
+#     # Compute the shortest path and its length using the networkx library
+#     path_s_e = nx.shortest_path(G, source=start_point_id, target=end_point_id, weight= weight)
+#     length_s_e = nx.shortest_path_length(G, source=start_point_id, target=end_point_id, weight= weight)
+    
+   
+#     # Select the edges that belong to the shortest path and compute their linewidth based on their weight
+#     short_path_edges = edges.loc[edges.to_from.isin(list(pairwise(path_s_e))) | edges.from_to.isin(list(pairwise(path_s_e)))]
+#     #short_path_edges['linewidth'] = short_path_edges['weights'].apply(lambda x: np.ceil(x * 0.01 / 2))   # test 'linewidth' with one pair and there is no practical significance camparing with several routes and can be left out of the calculation 
+    
+#     # Return the computed values as a tuple
+#     return path_s_e, length_s_e, short_path_edges
+
+# def all_shortest_paths(G, id_pairs, edges):
+#     """
+#     Find all shortest paths between start and end nodes and extract corresponding edges.
+
+#     Args:
+#     - id_pairs: a pandas DataFrame containing start and end node IDs for each path
+#     - edges: a pandas DataFrame containing edges in the network, with columns 'from_id', 'to_id', and 'weights'
+
+#     Returns:
+#     - shortest_path_pairs: a pandas DataFrame containing the edges for all shortest paths found
+
+#     Example:
+#     >>> shortest_path_pairs = all_shortest_paths(id_pairs, edges)
+
+#     Note: This function requires the pandas and networkx libraries to be installed.
+#     """
+#     row_num = id_pairs.shape[0]
+#     shortest_path_pairs = pd.DataFrame()
+    
+#     for i in range(row_num):
+#         s_id = id_pairs.loc[i,'s_id']
+#         e_id = id_pairs.loc[i,'e_id']
+#         try:
+#             # Find shortest path between start and end nodes
+#             path_s_e = nx.shortest_path(G, source=s_id, target=e_id, weight= "weight")
+#             # Extract edges corresponding to shortest path
+#             short_path_edges = edges.loc[edges.to_from.isin(list(pairwise(path_s_e))) | edges.from_to.isin(list(pairwise(path_s_e)))]
+#             shortest_path_pairs = pd.concat([shortest_path_pairs,short_path_edges])
+#         except nx.NetworkXNoPath:
+#             # If no path exists between start and end nodes, continue to next pair
+#             # print(f"No path found between {s_id} and {e_id}")
+#             continue
+#         #print(path_s_e, length_s_e)
+        
+#     return shortest_path_pairs
 
 
 def all_shortest_path_id_list(G, id_pairs, edges):
