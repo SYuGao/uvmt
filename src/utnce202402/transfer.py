@@ -1811,7 +1811,7 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     
     # Only keep the links which are less than 500meters
     connect_edges = connect_edges[connect_edges['distance'] <= 500].reset_index(drop=True)
-    
+    # connect_edges = connect_edges[connect_edges['distance'] <= 300].reset_index(drop=True)  #20240911
     # Assign unique IDs to connecting edges
     connect_edges_id_list = [id_edges_length_sub] + [i for i in range(id_edges_length_sub + 1, id_edges_length_sub + len(connect_edges))]
     connect_edges['id'] = connect_edges_id_list
@@ -1823,33 +1823,38 @@ def create_connect_edges_one_network(connect_stations, id_edges_length_sub, city
     # connect_edges['weights'] = 15/60*25000
     # connect_edges['weights'] = 2000
     # connect_edges['weights'] = 1700
-    connect_edges['weights'] = 1000000
-    # connect_edges['weights'] = 900
+    # connect_edges['weights'] = 1000000
+    # connect_edges['weights'] = 6800
     # connect_edges['weights'] = 1000
     # connect_edges['weights'] = 4000
     # connect_edges['weights'] = 3000
     # connect_edges['weights'] = 10/60*25000
     # connect_edges['weights'] = 1660
+    # connect_edges['weights'] = (15.2+17.7)/2/60*25000  # 25000m/h metro average speed    #20240911
+    connect_edges['weights'] = 16.5/60*25000  # 25000m/h metro average speed    #20240912
     
     # Set time attribute of connecting edges to a value higher than the maximum value in city_sub_new_edges: 15mins for passengers' walking transfer
     # connect_edges['time'] = city_sub_new_edges.sort_values(by='time').time.iloc[-1] +  1
-    connect_edges['time'] = 15
+    # connect_edges['time'] = (15.2+17.7)/2   # minutes   #20240911
+    connect_edges['time'] = 16.5   # minutes   #20240912
     # connect_edges['wcl_weights'] = 600
     # connect_edges['wcl_weights'] = 500
     # connect_edges['wcl_weights'] = 300
     # connect_edges['wcl_weights'] = 1600
-    # connect_edges['wcl_weights'] = 700
+    # connect_edges['wcl_weights'] = 1700
     # connect_edges['wcl_weights'] = 800
     # connect_edges['wcl_weights'] = 1200
-    connect_edges['wcl_weights'] = 1660
+    # connect_edges['wcl_weights'] = 1660
     # connect_edges['wcl_weights'] = 980
     # connect_edges['wcl_weights'] = 1000
-    # connect_edges['wcl_weights'] = 900
+    # connect_edges['wcl_weights'] = 6800
     # connect_edges['wcl_weights'] = 1400
     # connect_edges['wcl_weights'] = 1500
-    # connect_edges['wcl_weights'] = 2000
+    # connect_edges['wcl_weights'] = 6000
     # connect_edges['wcl_weights'] = 6250
     # connect_edges['wcl_weights'] = connect_edges['distance'] + 60
+    # connect_edges['wcl_weights'] = (15.2+17.7)/2/60*25000  #20240911
+    connect_edges['wcl_weights'] = 16.5/60*25000  #20240912
     
     # Return the DataFrame containing information about the connecting edges
     return connect_edges
